@@ -2,1264 +2,1746 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Multi-Format Block Coder & Script Generator Ultimate</title>
-    <!-- Blockly CDN -->
-    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1e1e1e;
-            color: #000000;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-        header {
-            background: #2d2d2d;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #3d3d3d;
-            flex-shrink: 0;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        h1 { margin: 0; font-size: 18px; color: #4ec9b0; }
-        .selectors-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .format-selector {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        label { font-size: 13px; color: #9cdcfe; font-weight: bold; }
-        select {
-            background: #252526;
-            color: #d4d4d4;
-            border: 1px solid #3f3f46;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        select:focus { outline: none; border-color: #007acc; }
-        .main-container {
-            display: flex;
-            flex: 1;
-            width: 100%;
-            height: calc(100vh - 53px);
-            position: relative;
-        }
-        #blocklyDiv {
-            flex-grow: 1;
-            height: 100%;
-            position: relative;
-        }
-        .output-panel {
-            width: 420px;
-            min-width: 350px;
-            background: #252526;
-            border-left: 2px solid #3d3d3d;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            height: 100%;
-        }
-        h3 { margin-top: 0; color: #9cdcfe; font-size: 15px; }
-        textarea {
-            flex: 1;
-            background: #1e1e1e;
-            color: #ce9178;
-            border: 1px solid #3f3f46;
-            padding: 12px;
-            font-family: 'Consolas', 'Courier New', Courier, monospace;
-            font-size: 13px;
-            resize: none;
-            border-radius: 4px;
-            line-height: 1.4;
-            white-space: pre;
-        }
-        .btn-generate {
-            background: #28a745;
-            color: white;
-            font-size: 15px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        .btn-generate:hover { background: #218838; }
-        .btn-gui {
-            background: #6f42c1;
-            color: #ffffff;
-            font-size: 14px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .btn-gui:hover { background: #5a32a3; }
-        button {
-            background: #0e639c;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        button:hover { background: #1177bb; }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModBlocker Studio - Generator Modów & GUI Designer</title>
 
-        /* Modal GUI Editora */
-        #guiModal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mcDark: '#0f1015',
+                        mcPanel: '#171922',
+                        mcCard: '#1f222e',
+                        mcBorder: '#2d3142',
+                        mcAccent: '#10b981',
+                        mcAccentHover: '#059669',
+                    }
+                }
+            }
         }
-        .modal-content {
-            background: #252526;
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #3f3f46;
-            width: 500px;
-            max-width: 90%;
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Inter & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Blockly Library CDN -->
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f1015;
+            color: #e2e8f0;
+        }
+        code, pre, #codeOutput {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom Blockly Dark Theme styling adjustments */
+        .blocklySvg {
+            background-color: #14161d !important;
+        }
+        .blocklyToolboxDiv {
+            background-color: #171922 !important;
+            border-right: 1px solid #2d3142 !important;
+            color: #e2e8f0 !important;
+            width: 240px !important;
+        }
+        .blocklyTreeLabel {
+            font-family: 'Inter', sans-serif !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: #cbd5e1 !important;
+        }
+        .blocklyTreeRow {
+            padding: 8px 12px !important;
+            margin: 2px 4px !important;
+            border-radius: 6px !important;
+            height: auto !important;
+            transition: all 0.15s ease !important;
+        }
+        .blocklyTreeRow:hover {
+            background-color: #242836 !important;
+        }
+        .blocklyTreeSelected {
+            background-color: #3b82f6 !important;
+        }
+        .blocklyTreeSelected .blocklyTreeLabel {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+        .blocklyFlyoutBackground {
+            fill: #1d202c !important;
+            fill-opacity: 0.95 !important;
+        }
+        .blocklyScrollbarHandle {
+            fill: #3b4154 !important;
+        }
+
+        /* Minecraft Chest Slot Styles */
+        .mc-slot {
+            width: 48px;
+            height: 48px;
+            background: #8b8b8b;
+            border-top: 3px solid #373737;
+            border-left: 3px solid #373737;
+            border-right: 3px solid #ffffff;
+            border-bottom: 3px solid #ffffff;
+            box-sizing: border-box;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .modal-content h2 { margin-top: 0; color: #4ec9b0; font-size: 18px; }
-        .gui-grid {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            gap: 5px;
-            background: #1e1e1e;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #3f3f46;
-        }
-        .gui-slot {
-            aspect-ratio: 1;
-            background: #2d2d2d;
-            border: 1px solid #444;
-            border-radius: 4px;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 11px;
-            color: #888;
-            cursor: pointer;
+            justify-content: center;
             position: relative;
-        }
-        .gui-slot:hover { border-color: #007acc; background: #333; }
-        .gui-slot input {
-            position: absolute;
-            width: 100%; height: 100%;
-            opacity: 0;
             cursor: pointer;
+            user-select: none;
         }
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+        .mc-slot:hover {
+            background: #a0a0a0;
+            border-color: #3b82f6;
+        }
+        .mc-slot.selected {
+            outline: 3px solid #f59e0b;
+            z-index: 10;
+        }
+        .mc-slot-item {
+            font-size: 22px;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.7));
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f1015;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3142;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4154;
         }
     </style>
 </head>
-<body>
+<body class="h-screen flex flex-col overflow-hidden select-none">
 
-    <header>
-        <h1>Block Coder & Generator Ultimate</h1>
-        <div class="selectors-group">
-            <div class="format-selector">
-                <label for="mcVersionSelect">Wersja MC:</label>
-                <select id="mcVersionSelect">
-                    <option value="1.21">1.21 / 1.21.x (Najnowsza)</option>
-                    <option value="1.20">1.20 lub starsze</option>
-                </select>
+    <!-- Top Navigation Header -->
+    <header class="h-16 bg-mcPanel border-b border-mcBorder px-4 flex items-center justify-between z-20 shrink-0">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-900/30">
+                <i class="fa-solid fa-cube text-white text-xl"></i>
             </div>
-            <div class="format-selector">
-                <label for="formatSelect">Format:</label>
-                <select id="formatSelect">
-                    <option value="skript">Skript (Minecraft)</option>
-                    <option value="js">JavaScript</option>
-                    <option value="python">Python</option>
-                    <option value="html">HTML</option>
-                    <option value="commands">Komendy MC (Vanilla)</option>
-                </select>
+            <div>
+                <h1 class="font-bold text-lg leading-tight text-white flex items-center gap-2">
+                    ModBlocker Studio
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v4.0 COMMANDS MAX</span>
+                </h1>
+                <p class="text-xs text-slate-400">Edytor Klockowy, Komendy & Wizualny Designer GUI Minecraft</p>
             </div>
+        </div>
+
+        <!-- Center View Switcher Tabs -->
+        <div class="flex bg-mcDark p-1 rounded-xl border border-mcBorder">
+            <button id="tabBlocksBtn" onclick="switchMainTab('blocks')" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-shapes"></i> Bloki (Blockly)
+            </button>
+            <button id="tabGuiBtn" onclick="switchMainTab('gui')" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-window-restore"></i> Creator GUI (Skrzynia)
+            </button>
+        </div>
+
+        <!-- Presets & Workspace Actions -->
+        <div class="flex items-center space-x-2">
+            <!-- Preset Selector -->
+            <select id="presetSelect" onchange="loadPreset(this.value)" class="bg-mcDark text-slate-200 border border-mcBorder text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer">
+                <option value="" disabled selected>🚀 Wybierz Szablon...</option>
+                <option value="cmd_vip">Komenda /vip z GUI i premią</option>
+                <option value="cmd_heal">Komenda /ulecz z cooldownem</option>
+                <option value="welcome">VIP Welcome & Sound Kit</option>
+                <option value="autohealer">Auto-Healer Pads</option>
+                <option value="shopgui">Sklep GUI Ekwipunku</option>
+                <option value="boss">Custom Mob Boss Spawner</option>
+            </select>
+
+            <button onclick="clearWorkspace()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1.5" title="Wyczyść obszar roboczy">
+                <i class="fa-solid fa-trash-can"></i> Wyczyść
+            </button>
+
+            <div class="h-6 w-[1px] bg-mcBorder mx-1"></div>
+
+            <!-- Export Buttons -->
+            <button onclick="exportCode('sk')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3.5 py-2 rounded-lg text-xs transition shadow-md shadow-emerald-900/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-download"></i> Pobierz (.sk)
+            </button>
+            <button onclick="exportCode('js')" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3.5 py-2 rounded-lg text-xs transition shadow-md shadow-blue-900/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-code"></i> Pobierz (.js)
+            </button>
         </div>
     </header>
 
-    <div class="main-container">
-        <div id="blocklyDiv"></div>
-        
-        <div class="output-panel">
-            <h3>Wygenerowany Kod:</h3>
-            <button class="btn-generate" onclick="updateCode()">⚙️ Generuj Kod</button>
-            <button class="btn-gui" onclick="openGuiModal()">🎨 Edytor GUI (Menu)</button>
-            <textarea id="outputCode" readonly placeholder="Kliknij 'Generuj Kod', aby przekonwertować klocki..."></textarea>
-            <button onclick="copyCode()">Skopiuj do schowka</button>
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden relative">
+
+        <!-- TAB 1: BLOCKLY BUILDER -->
+        <div id="viewBlocks" class="flex-1 relative h-full">
+            <div id="blocklyDiv" class="absolute inset-0"></div>
+        </div>
+
+        <!-- TAB 2: VISUAL CHEST GUI DESIGNER -->
+        <div id="viewGui" class="flex-1 bg-mcDark p-6 overflow-y-auto hidden flex-col items-center justify-start">
+            <div class="max-w-4xl w-full flex flex-col gap-6">
+                
+                <!-- GUI Config Header Card -->
+                <div class="bg-mcPanel border border-mcBorder rounded-2xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-emerald-400"></i> Ustawienia Nowego GUI Skrzyni
+                        </h2>
+                        <p class="text-xs text-slate-400">Zaprojektuj układy przedmiotów w skrzyni Minecraft i wygeneruj klocki lub kod.</p>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Tytuł GUI</label>
+                            <input type="text" id="guiTitleInput" value="&8Sklep Serwerowy" oninput="updateGuiHeaderTitle()" class="bg-mcDark border border-mcBorder text-white text-xs rounded-lg px-3 py-1.5 w-48 focus:border-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Wiersze (Rozmiar)</label>
+                            <select id="guiRowsSelect" onchange="changeGuiRows(this.value)" class="bg-mcDark border border-mcBorder text-white text-xs rounded-lg px-3 py-1.5 focus:border-emerald-500 outline-none">
+                                <option value="1">1 wiersz (9 slotów)</option>
+                                <option value="2">2 wiersze (18 slotów)</option>
+                                <option value="3" selected>3 wiersze (27 slotów)</option>
+                                <option value="4">4 wiersze (36 slotów)</option>
+                                <option value="5">5 wierszy (45 slotów)</option>
+                                <option value="6">6 wierszy (54 sloty)</option>
+                            </select>
+                        </div>
+                        <div class="self-end">
+                            <button onclick="injectGuiToBlockly()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-lg shadow-emerald-900/30 transition flex items-center gap-2">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Wygeneruj Klocki GUI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GUI Canvas & Item Property Editor Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Minecraft Chest Visual Container (Left 2 cols) -->
+                    <div class="lg:col-span-2 bg-mcPanel border border-mcBorder rounded-2xl p-6 shadow-xl flex flex-col items-center">
+                        <!-- Chest Frame Header -->
+                        <div class="bg-[#c6c6c6] text-[#373737] px-4 py-2 rounded-t-lg border-2 border-b-0 border-[#373737] w-full font-bold text-sm flex items-center justify-between">
+                            <span id="chestTitleDisplay">Sklep Serwerowy</span>
+                            <span class="text-xs font-mono text-[#555]">Container GUI</span>
+                        </div>
+                        
+                        <!-- Minecraft Slots Grid -->
+                        <div class="bg-[#c6c6c6] p-3 rounded-b-lg border-2 border-t-0 border-[#373737] shadow-inner w-full flex justify-center">
+                            <div id="chestSlotsGrid" class="grid grid-cols-9 gap-1 bg-[#8b8b8b] p-2 border-2 border-[#373737]">
+                                <!-- Slots injected via JS -->
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 text-center">
+                            <i class="fa-solid fa-mouse-pointer text-emerald-400 mr-1"></i> Kliknij dowolny slot, aby przypisać do niego przedmiot i akcję!
+                        </p>
+                    </div>
+
+                    <!-- Slot Item Inspector & Editor (Right col) -->
+                    <div class="bg-mcPanel border border-mcBorder rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                        <h3 class="font-bold text-sm text-white border-b border-mcBorder pb-2 flex items-center justify-between">
+                            <span>Edytor Slotu #<span id="selectedSlotNum">0</span></span>
+                            <span id="selectedSlotBadge" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">Pusty</span>
+                        </h3>
+
+                        <!-- Item Select Icons Quick Pick -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Wybierz Przedmiot</label>
+                            <div class="grid grid-cols-6 gap-2 bg-mcDark p-2 rounded-lg border border-mcBorder text-xl">
+                                <button onclick="setItemForSelectedSlot('diamond', '💎')" class="hover:bg-mcBorder p-1.5 rounded transition">💎</button>
+                                <button onclick="setItemForSelectedSlot('diamond_sword', '⚔️')" class="hover:bg-mcBorder p-1.5 rounded transition">⚔️</button>
+                                <button onclick="setItemForSelectedSlot('golden_apple', '🍏')" class="hover:bg-mcBorder p-1.5 rounded transition">🍏</button>
+
+                                <button onclick="setItemForSelectedSlot('chest', '📦')" class="hover:bg-mcBorder p-1.5 rounded transition">📦</button>
+                                <button onclick="setItemForSelectedSlot('potion', '🧪')" class="hover:bg-mcBorder p-1.5 rounded transition">🧪</button>
+                                <button onclick="setItemForSelectedSlot('black_stained_glass_pane', '⬛')" class="hover:bg-mcBorder p-1.5 rounded transition">⬛</button>
+                                
+                                <button onclick="setItemForSelectedSlot('emerald', '❇️')" class="hover:bg-mcBorder p-1.5 rounded transition">❇️</button>
+                                <button onclick="setItemForSelectedSlot('book', '📜')" class="hover:bg-mcBorder p-1.5 rounded transition">📜</button>
+                                <button onclick="setItemForSelectedSlot('barrier', '❌')" class="hover:bg-mcBorder p-1.5 rounded transition">❌</button>
+                                <button onclick="setItemForSelectedSlot('bow', '🏹')" class="hover:bg-mcBorder p-1.5 rounded transition">🏹</button>
+                                <button onclick="setItemForSelectedSlot('nether_star', '⭐')" class="hover:bg-mcBorder p-1.5 rounded transition">⭐</button>
+                                <button onclick="setItemForSelectedSlot('gold_ingot', '🪙')" class="hover:bg-mcBorder p-1.5 rounded transition">🪙</button>
+                            </div>
+                        </div>
+
+                        <!-- Item Properties -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">ID Przedmiotu (Skript ID)</label>
+                            <input type="text" id="slotItemIdInput" oninput="saveCurrentSlotData()" value="diamond" class="bg-mcDark border border-mcBorder text-white text-xs rounded-lg px-3 py-1.5 w-full outline-none focus:border-emerald-500 font-mono">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Nazwa (Display Name)</label>
+                            <input type="text" id="slotNameInput" oninput="saveCurrentSlotData()" value="&aKup Rangę VIP" class="bg-mcDark border border-mcBorder text-white text-xs rounded-lg px-3 py-1.5 w-full outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Opis (Lore)</label>
+                            <textarea id="slotLoreInput" oninput="saveCurrentSlotData()" rows="2" class="bg-mcDark border border-mcBorder text-white text-xs rounded-lg px-3 py-1.5 w-full outline-none focus:border-emerald-500" placeholder="&7Cena: 100 Monet"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Wykonaj Komendę po Kliknięciu</label>
+                            <input type="text" id="slotCommandInput" oninput="saveCurrentSlotData()" value="exec /sklep vip %player%" class="bg-mcDark border border-mcBorder text-white text-xs rounded-lg px-3 py-1.5 w-full outline-none focus:border-emerald-500 font-mono">
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-2 border-t border-mcBorder">
+                            <button onclick="clearCurrentSlotData()" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 py-1.5 rounded-lg text-xs font-semibold transition">
+                                Wyczyść Slot
+                            </button>
+                            <button onclick="fillEmptySlotsWithGlass()" class="flex-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 py-1.5 rounded-lg text-xs font-semibold transition">
+                                Wypełnij Szybą
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side Panel: Generated Code Output -->
+        <div id="codePanel" class="w-96 md:w-[460px] bg-mcPanel border-l border-mcBorder flex flex-col h-full shrink-0 shadow-2xl z-10 transition-all duration-300">
+            
+            <!-- Code Panel Header -->
+            <div class="h-12 border-b border-mcBorder px-4 flex items-center justify-between bg-mcDark/50">
+                <div class="flex items-center space-x-2">
+                    <button id="langSkriptBtn" onclick="switchLang('skript')" class="px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        Skript (.sk)
+                    </button>
+                    <button id="langJsBtn" onclick="switchLang('js')" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-white hover:bg-mcBorder transition">
+                        JavaScript / Mod (.js)
+                    </button>
+                </div>
+                <button onclick="copyGeneratedCode()" class="text-slate-400 hover:text-emerald-400 text-xs flex items-center gap-1 transition">
+                    <i class="fa-solid fa-copy"></i> Kopiuj
+                </button>
+            </div>
+
+            <!-- Real-time Generated Code Output -->
+            <div class="flex-1 p-4 overflow-y-auto bg-mcDark relative">
+                <pre id="codeOutput" class="text-xs text-emerald-400 leading-relaxed whitespace-pre-wrap"><code># Wygenerowany kod pojawi się tutaj...</code></pre>
+            </div>
+
+            <!-- Live Status & Stats Bar -->
+            <div class="h-10 border-t border-mcBorder px-4 flex items-center justify-between text-xs text-slate-400 bg-mcDark/80">
+                <span id="blockCount"><i class="fa-solid fa-cubes mr-1 text-slate-500"></i> Bloki: 0</span>
+                <span id="statusIndicator" class="flex items-center text-emerald-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span> Na żywo
+                </span>
+            </div>
         </div>
     </div>
 
-    <!-- Modal Edytora GUI -->
-    <div id="guiModal">
-        <div class="modal-content">
-            <h2>Kreator Menu GUI</h2>
-            <div>
-                <label>Nazwa / Tytuł GUI:</label>
-                <input type="text" id="guiTitleInput" value="Sklep Serwera" style="width: 100%; padding: 8px; background: #1e1e1e; color: #fff; border: 1px solid #3f3f46; border-radius: 4px; margin-top: 5px;">
-            </div>
-            <div>
-                <label>Wiersze (Rozmiar):</label>
-                <select id="guiRowsSelect" style="width: 100%; margin-top: 5px;" onchange="updateGuiGridSize()">
-                    <option value="1">1 wiersz (9 slotów)</option>
-                    <option value="2">2 wiersze (18 slotów)</option>
-                    <option value="3" selected>3 wiersze (27 slotów)</option>
-                    <option value="4">4 wiersze (36 slotów)</option>
-                    <option value="5">5 wierszy (45 slotów)</option>
-                    <option value="6">6 wierszy (54 sloty)</option>
-                </select>
-            </div>
-            <label>Układ przedmiotów (Kliknij, aby wpisać ID przedmiotu np. diamond):</label>
-            <div class="gui-grid" id="guiGridContainer">
-                <!-- Generowane dynamicznie -->
-            </div>
-            <div class="modal-buttons">
-                <button style="background: #555;" onclick="closeGuiModal()">Zamknij</button>
-                <button style="background: #28a745;" onclick="saveGuiConfig()">Zapisz GUI</button>
-            </div>
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-6 bg-emerald-600 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toastMsg">Powiadomienie</span>
     </div>
 
-    <!-- Definicje Toolboxa (Wszystkie opcje) -->
+    <!-- BLOCKLY TOOLBOX DEFINITION (12 Categories, 100+ Blocks System) -->
     <xml id="toolbox" style="display: none">
-        <category name="Zdarzenia" colour="#e2a14a">
-            <block type="on_event"></block>
-            <block type="on_command"></block>
+        <!-- 1. GUI I EKRAN -->
+        <category name="🖥️ GUI i Ekran" colour="#00cec9">
+            <block type="gui_open_chest"></block>
+            <block type="gui_format_slot"></block>
+
+            <block type="gui_open_virtual"></block>
+
+            <block type="gui_unstealable_slot"></block>
+
+            <block type="gui_close"></block>
+
+            <block type="gui_click_cancel"></block>
         </category>
-        <category name="Czynności i Logika" colour="#b83ba8">
-            <block type="do_action"></block>
-            <block type="if_then_action"></block>
-            <block type="if_else_action"></block>
-            <block type="if_statement"></block>
-            <block type="repeat_loop"></block>
-            <block type="while_loop"></block>
-            <block type="wait_delay"></block>
+
+        <!-- 2. ZDARZENIA -->
+        <category name="⚡ Zdarzenia" colour="#e67e22">
+            <block type="event_join"></block>
+            <block type="event_quit"></block>
+            <block type="event_death"></block>
+            <block type="event_respawn"></block>
+            <block type="event_chat"></block>
+            <block type="event_command"></block>
+            <block type="event_block_break"></block>
+            <block type="event_block_place"></block>
+            <block type="event_right_click"></block>
+            <block type="event_left_click"></block>
+            <block type="event_damage"></block>
+            <block type="event_projectile_hit"></block>
         </category>
-        <category name="Akcje i Chat" colour="#4a90e2">
-            <block type="send_message"></block>
-            <block type="broadcast_msg"></block>
-            <block type="send_pm"></block>
-            <block type="send_actionbar"></block>
-            <block type="console_log"></block>
+
+        <!-- 3. AKCJE GRACZA -->
+        <category name="👤 Akcje Gracza" colour="#3498db">
+            <block type="player_message"></block>
+            <block type="player_title"></block>
+            <block type="player_actionbar"></block>
+            <block type="player_teleport"></block>
+            <block type="player_give"></block>
+
+            <block type="player_heal"></block>
+
+            <block type="player_feed"></block>
+            <block type="player_kick"></block>
+
+            <block type="player_ban"></block>
+            <block type="player_set_gamemode"></block>
+
+            <block type="player_set_fly"></block>
+            <block type="player_set_op"></block>
         </category>
-        <category name="Gracz i Świat" colour="#5cb85c">
-            <block type="give_item"></block>
-            <block type="remove_item"></block>
-            <block type="clear_inventory"></block>
-            <block type="teleport_player"></block>
-            <block type="open_gui"></block>
-            <block type="play_sound_custom"></block>
-            <block type="command_dynamic_sound"></block>
-            <block type="execute_command"></block>
-            <block type="set_level"></block>
-            <block type="add_level"></block>
-            <block type="heal_player"></block>
-            <block type="feed_player"></block>
-            <block type="set_gamemode"></block>
-            <block type="apply_potion"></block>
-            <block type="spawn_lightning"></block>
-            <block type="spawn_explosion"></block>
-            <block type="kick_player"></block>
-            <block type="ban_player"></block>
+
+        <!-- 4. ŚWIAT I BLOKI -->
+        <category name="🌍 Świat i Bloki" colour="#2ecc71">
+            <block type="world_set_block"></block>
+
+            <block type="world_lightning"></block>
+            <block type="world_set_time"></block>
+
+            <block type="world_set_weather"></block>
+            <block type="world_create_explosion"></block>
+
+            <block type="world_play_sound"></block>
+            <block type="world_spawn_particle"></block>
+
+            <block type="world_get_block_at"></block>
         </category>
-        <category name="Zmienne i Math" colour="#f0ad4e">
-            <block type="set_variable"></block>
-            <block type="add_variable"></block>
-            <block type="math_operation"></block>
-            <block type="get_random_number"></block>
+
+        <!-- 5. BYT I MOB -->
+        <category name="🧟 Byt i Mob" colour="#9b59b6">
+            <block type="entity_spawn"></block>
+
+            <block type="entity_kill"></block>
+
+            <block type="entity_burn"></block>
+            <block type="entity_add_effect"></block>
+
+            <block type="entity_remove_effect"></block>
+
+            <block type="entity_set_name"></block>
+            <block type="entity_set_health"></block>
+            <block type="entity_push"></block>
+        </category>
+
+        <!-- 6. WARUNKI I LOGIKA -->
+        <category name="🔀 Warunki i Logika" colour="#f1c40f">
+            <block type="logic_if"></block>
+            <block type="logic_if_else"></block>
+
+            <block type="logic_compare"></block>
+
+            <block type="logic_player_has_permission"></block>
+            <block type="logic_player_has_item"></block>
+            <block type="logic_player_is_op"></block>
+            <block type="logic_player_gamemode_is"></block>
+
+            <block type="logic_is_sneaking"></block>
+        </category>
+
+        <!-- 7. ZMIENNE I LICZBY -->
+        <category name="🔢 Zmienne i Liczby" colour="#1abc9c">
+            <block type="var_set"></block>
+
+            <block type="var_add"></block>
+            <block type="var_subtract"></block>
+
+            <block type="math_number"></block>
+
+            <block type="math_random"></block>
+
+            <block type="string_concat"></block>
+            <block type="var_get"></block>
+        </category>
+
+        <!-- 8. PĘTLE I CZAS -->
+        <category name="⏳ Pętle i Czas" colour="#e74c3c">
+            <block type="time_wait"></block>
+
+            <block type="time_periodical"></block>
+
+            <block type="loop_repeat"></block>
+            <block type="loop_all_players"></block>
+
+            <block type="loop_all_entities"></block>
+        </category>
+
+    <!-- BLOCKLY TOOLBOX DEFINITION (12 Categories, Expanded Command & Block Suite) -->
+    <xml id="toolbox" style="display: none">
+        <!-- 1. KOMENDY I EXECUTE (NEW CATEGORY) -->
+        <category name="⚡ Komendy i Wykonanie" colour="#6c5ce7">
+            <block type="cmd_declare_full"></block>
+            <block type="cmd_execute_as"></block>
+            <block type="cmd_dispatch_all"></block>
+            <block type="cmd_get_arg"></block>
+            <block type="cmd_cooldown"></block>
+            <block type="cmd_permission_check"></block>
+            <block type="adv_execute_console"></block>
+        </category>
+
+        <!-- 2. GUI I EKRAN -->
+        <category name="🖥️ GUI i Ekran" colour="#00cec9">
+            <block type="gui_open_chest"></block>
+            <block type="gui_format_slot"></block>
+            <block type="gui_open_virtual"></block>
+            <block type="gui_unstealable_slot"></block>
+            <block type="gui_close"></block>
+            <block type="gui_click_cancel"></block>
+        </category>
+
+        <!-- 3. ZDARZENIA -->
+        <category name="🔥 Zdarzenia" colour="#e67e22">
+            <block type="event_join"></block>
+            <block type="event_quit"></block>
+            <block type="event_death"></block>
+            <block type="event_respawn"></block>
+            <block type="event_chat"></block>
+            <block type="event_command"></block>
+            <block type="event_block_break"></block>
+            <block type="event_block_place"></block>
+            <block type="event_right_click"></block>
+            <block type="event_left_click"></block>
+            <block type="event_damage"></block>
+            <block type="event_projectile_hit"></block>
+            <block type="event_craft"></block>
+        </category>
+
+        <!-- 4. AKCJE GRACZA -->
+        <category name="👤 Akcje Gracza" colour="#3498db">
+            <block type="player_message"></block>
+            <block type="player_title"></block>
+            <block type="player_actionbar"></block>
+            <block type="player_teleport"></block>
+            <block type="player_give"></block>
+            <block type="player_heal"></block>
+            <block type="player_feed"></block>
+            <block type="player_kick"></block>
+            <block type="player_ban"></block>
+            <block type="player_set_gamemode"></block>
+            <block type="player_set_fly"></block>
+            <block type="player_set_op"></block>
+            <block type="player_money_give"></block>
+            <block type="player_money_take"></block>
+        </category>
+
+        <!-- 5. ŚWIAT I BLOKI -->
+        <category name="🌍 Świat i Bloki" colour="#2ecc71">
+            <block type="world_set_block"></block>
+            <block type="world_lightning"></block>
+            <block type="world_set_time"></block>
+            <block type="world_set_weather"></block>
+            <block type="world_create_explosion"></block>
+            <block type="world_play_sound"></block>
+            <block type="world_spawn_particle"></block>
+            <block type="world_get_block_at"></block>
+        </category>
+
+        <!-- 6. BYT I MOB -->
+        <category name="🧟 Byt i Mob" colour="#9b59b6">
+            <block type="entity_spawn"></block>
+            <block type="entity_kill"></block>
+            <block type="entity_burn"></block>
+            <block type="entity_add_effect"></block>
+            <block type="entity_remove_effect"></block>
+            <block type="entity_set_name"></block>
+            <block type="entity_set_health"></block>
+            <block type="entity_push"></block>
+            <block type="entity_target"></block>
+        </category>
+
+        <!-- 7. WARUNKI I LOGIKA -->
+        <category name="🔀 Warunki i Logika" colour="#f1c40f">
+            <block type="logic_if"></block>
+            <block type="logic_if_else"></block>
+            <block type="logic_compare"></block>
+            <block type="logic_player_has_permission"></block>
+            <block type="logic_player_has_item"></block>
+            <block type="logic_player_is_op"></block>
+            <block type="logic_player_gamemode_is"></block>
+            <block type="logic_is_sneaking"></block>
+        </category>
+
+        <!-- 8. ZMIENNE I LICZBY -->
+        <category name="🔢 Zmienne i Liczby" colour="#1abc9c">
+            <block type="var_set"></block>
+            <block type="var_add"></block>
+            <block type="var_subtract"></block>
+            <block type="math_number"></block>
+            <block type="math_random"></block>
+            <block type="string_concat"></block>
+            <block type="var_get"></block>
+        </category>
+
+        <!-- 9. PĘTLE I CZAS -->
+        <category name="⏳ Pętle i Czas" colour="#e74c3c">
+            <block type="time_wait"></block>
+            <block type="time_periodical"></block>
+            <block type="loop_repeat"></block>
+            <block type="loop_all_players"></block>
+            <block type="loop_all_entities"></block>
+        </category>
+
+        <!-- 10. PRZEDMIOTY I ARMOR -->
+        <category name="⚔️ Przedmioty i Armor" colour="#d35400">
+            <block type="item_create"></block>
+            <block type="item_enchant"></block>
+            <block type="item_set_lore"></block>
+            <block type="item_equip_armor"></block>
+            <block type="item_clear_inventory"></block>
+            <block type="item_repair_hand"></block>
+        </category>
+
+        <!-- 11. DŹWIĘKI I EFEKTY -->
+        <category name="🎵 Dźwięki i Efekty" colour="#e84393">
+            <block type="effect_playsound_custom"></block>
+            <block type="effect_particle_ring"></block>
+            <block type="effect_bossbar"></block>
+            <block type="effect_play_note"></block>
+            <block type="effect_blind_player"></block>
+        </category>
+
+        <!-- 12. WALKA I BEZPIECZEŃSTWO -->
+        <category name="💥 Walka i Zaawansowane" colour="#b2bec3">
+            <block type="combat_damage_attacker"></block>
+            <block type="combat_damage_victim"></block>
+            <block type="combat_apply_knockback"></block>
+            <block type="combat_set_combattag"></block>
+            <block type="combat_clear_effects"></block>
+            <block type="adv_broadcast"></block>
+            <block type="adv_webhook_log"></block>
+            <block type="adv_cancel_event"></block>
         </category>
     </xml>
 
+    <!-- BLOCKLY REGISTRATION & LOGIC SCRIPT -->
     <script>
-        // --- INICJALIZACJA BLOCKLY ---
-        var workspace = Blockly.inject('blocklyDiv', {
-            toolbox: document.getElementById('toolbox'),
-            grid: { spacing: 20, length: 3, colour: '#333', snap: true },
-            zoom: { controls: true, wheel: true }
-        });
+        let workspace = null;
+        let currentLang = 'skript';
+        let currentGuiRows = 3;
+        let selectedSlotIndex = 0;
+        let guiSlotsData = Array(54).fill(null);
 
-        // --- DEFINICJE KLOCKÓW ---
+        // ----------------------------------------------------
+        // INITIALIZE CUSTOM BLOCKLY BLOCKS
+        // ----------------------------------------------------
+        function initBlocks() {
 
-        Blockly.Blocks['on_event'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "Gdy zdarzenie: %1 %2",
-                    "args0": [
-                        {
-                            "type": "field_dropdown",
-                            "name": "EVENT_TYPE",
-                            "options": [
-                                ["Wejście gracza na serwer", "join"],
-                                ["Wyjście gracza", "quit"],
-                                ["Napisanie wiadomości na czacie", "chat"],
-                                ["Śmierć gracza", "death"],
-                                ["Odrodzenie gracza", "respawn"],
-                                ["Podniesienie przedmiotu", "pickup"],
-                                ["Wyrzucenie przedmiotu", "drop"]
-                            ]
-                        },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "colour": 300,
-                    "tooltip": "Główny trigger zdarzenia serwerowego"
-                });
-            }
-        };
+            // NEW CATEGORY: KOMENDY I EXECUTE
+            Blockly.Blocks['cmd_declare_full'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("⚡ Twórz komendę /")
+                        .appendField(new Blockly.FieldTextInput("vip"), "NAME")
+                        .appendField("permisja:")
+                        .appendField(new Blockly.FieldTextInput("serwer.vip"), "PERM");
+                    this.appendStatementInput("DO").appendField("po wpisaniu komendy");
+                    this.setColour("#6c5ce7");
+                }
+            };
 
-        Blockly.Blocks['on_command'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "Gdy gracz wpisze komendę /%1 to %2",
-                    "args0": [
-                        { "type": "field_input", "name": "CMD", "text": "pomoc" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "colour": 280,
-                    "tooltip": "Tworzy nową komendę na serwerze"
-                });
-            }
-        };
+            Blockly.Blocks['cmd_execute_as'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("💻 Wykonaj komendę jako")
+                        .appendField(new Blockly.FieldDropdown([
+                            ["Konsola (Console)", "console"],
+                            ["Gracz (Player)", "player"],
+                            ["Gracz jako OP (OP Override)", "op"]
+                        ]), "TARGET")
+                        .appendField("tresć:")
+                        .appendField(new Blockly.FieldTextInput("say Siema %player%!"), "CMD");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
 
-        Blockly.Blocks['do_action'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wykonaj czynność: %1 %2",
-                    "args0": [
-                        { "type": "field_input", "name": "ACTION_NAME", "text": "nazwa_czynnosci" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 290,
-                    "tooltip": "Grupuje i wykonuje zdefiniowany blok czynności"
-                });
-            }
-        };
+            Blockly.Blocks['cmd_dispatch_all'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("📢 Wykonaj komendę dla każdego gracza:")
+                        .appendField(new Blockly.FieldTextInput("msg %player% Event rozpoczęty!"), "CMD");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
 
-        Blockly.Blocks['if_then_action'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "jeśli %1 to zrób akcję %2 %3",
-                    "args0": [
-                        { "type": "field_input", "name": "CONDITION", "text": "gracz ma uprawnienia" },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 270,
-                    "tooltip": "Wykonuje zestaw akcji po spełnieniu warunku"
-                });
-            }
-        };
+            Blockly.Blocks['cmd_get_arg'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("🔍 Pobierz argument nr")
+                        .appendField(new Blockly.FieldNumber(1), "ARG_NUM")
+                        .appendField("jako tekst");
+                    this.setOutput(true, "String");
+                    this.setColour("#6c5ce7");
+                }
+            };
 
-        Blockly.Blocks['if_else_action'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "jeśli %1 to: %2 %3 w przeciwnym razie: %4 %5",
-                    "args0": [
-                        { "type": "field_input", "name": "CONDITION", "text": "zmienna > 5" },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "TRUE_DO" },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "FALSE_DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 265,
-                    "tooltip": "Instrukcja warunkowa z gałęzią Else"
-                });
-            }
-        };
+            Blockly.Blocks['cmd_cooldown'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("⏱️ Ustaw cooldown komendy na")
+                        .appendField(new Blockly.FieldNumber(10), "SEC")
+                        .appendField("sekund");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
 
-        Blockly.Blocks['wait_delay'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "po czasie %1 sekund wykonaj: %2 %3",
-                    "args0": [
-                        { "type": "field_number", "name": "SECONDS", "value": 3 },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 260,
-                    "tooltip": "Czeka określoną liczbę sekund przed wykonaniem kolejnych klocków"
-                });
-            }
-        };
+            Blockly.Blocks['cmd_permission_check'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("🔒 Wymagaj permisji")
+                        .appendField(new Blockly.FieldTextInput("komenda.uzycie"), "PERM")
+                        .appendField("brak -> tekst:")
+                        .appendField(new Blockly.FieldTextInput("&cBrak dostępu!"), "MSG");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
 
-        Blockly.Blocks['send_message'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wyślij jako %1 treść %2",
-                    "args0": [
-                        {
-                            "type": "field_dropdown",
-                            "name": "DISP_TYPE",
-                            "options": [
-                                ["Czat (Chat)", "chat"],
-                                ["Tytuł na środku (Title)", "title"],
-                                ["Menu boczne (Sidebar)", "sidebar"],
-                                ["Pasek bossa (Bossbar)", "bossbar"]
-                            ]
-                        },
-                        { "type": "field_input", "name": "MSG", "text": "Witaj na serwerze!" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 210,
-                    "tooltip": "Wysyła wiadomość do gracza w wybranym formacie"
-                });
-            }
-        };
+            // NEW ADDITIONAL PLAYER & EVENT BLOCKS
+            Blockly.Blocks['event_craft'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🛠️ Gdy gracz wytworzy przedmiot (Crafting)");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
 
-        Blockly.Blocks['send_pm'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wyślij prywatną wiadomość do %1 o treści %2",
-                    "args0": [
-                        { "type": "field_input", "name": "TARGET", "text": "Gracz" },
-                        { "type": "field_input", "name": "MSG", "text": "Siemanko!" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 200,
-                    "tooltip": "Wysyła wiadomość szeptem / PM"
-                });
-            }
-        };
+            Blockly.Blocks['player_money_give'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("💰 Daj monet gracza:")
+                        .appendField(new Blockly.FieldNumber(100), "AMOUNT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
 
-        Blockly.Blocks['send_actionbar'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wyślij na pasek akcji (Actionbar) %1",
-                    "args0": [{ "type": "field_input", "name": "MSG", "text": "Status: OK" }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 205,
-                    "tooltip": "Wyświetla tekst nad ekwipunkiem gracza"
-                });
-            }
-        };
+            Blockly.Blocks['player_money_take'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("💸 Zabierz monety gracza:")
+                        .appendField(new Blockly.FieldNumber(50), "AMOUNT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
 
-        Blockly.Blocks['broadcast_msg'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "ogłoś wszystkim %1",
-                    "args0": [{ "type": "field_input", "name": "MSG", "text": "Uwaga wszyscy!" }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 220,
-                    "tooltip": "Wysyła wiadomość do wszystkich graczy"
-                });
-            }
-        };
+            Blockly.Blocks['entity_target'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("🎯 Ustaw cel najbliższego moba na gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
 
-        Blockly.Blocks['console_log'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wypisz w konsoli %1",
-                    "args0": [{ "type": "field_input", "name": "TEXT", "text": "Log systemowy" }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 180,
-                    "tooltip": "Wpisuje tekst do konsoli serwera"
-                });
-            }
-        };
+            // CATEGORY 1: GUI I EKRAN
+            Blockly.Blocks['gui_open_chest'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("📦 Otwórz GUI skrzyni z tytułem")
+                        .appendField(new Blockly.FieldTextInput("&8Sklep Serwerowy"), "TITLE")
+                        .appendField("wierszy")
+                        .appendField(new Blockly.FieldNumber(3), "ROWS");
+                    this.appendStatementInput("DO").appendField("zawartość slotów GUI");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#00cec9");
+                }
+            };
+            Blockly.Blocks['gui_format_slot'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("🖼️ Ustaw slot nr")
+                        .appendField(new Blockly.FieldNumber(0), "SLOT")
+                        .appendField("na item")
+                        .appendField(new Blockly.FieldTextInput("diamond"), "ITEM")
+                        .appendField("nazwa:")
+                        .appendField(new Blockly.FieldTextInput("&aKup VIP"), "NAME");
+                    this.appendStatementInput("DO").appendField("po kliknięciu wykonaj");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#00cec9");
+                }
+            };
+            Blockly.Blocks['gui_open_virtual'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("🌐 Otwórz wirtualne GUI dla gracza:")
+                        .appendField(new Blockly.FieldTextInput("Wirtualny Ekwipunek"), "TITLE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#00cec9");
+                }
+            };
+            Blockly.Blocks['gui_unstealable_slot'] = {
+                init: function() {
+                    this.appendDummyInput()
+                        .appendField("🔒 Zablokuj slot nr")
+                        .appendField(new Blockly.FieldNumber(0), "SLOT")
+                        .appendField("przed wyjęciem (unstealable)");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#00cec9");
+                }
+            };
+            Blockly.Blocks['gui_close'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔒 Zamknij otwarty ekwipunek gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#00cec9");
+                }
+            };
+            Blockly.Blocks['gui_click_cancel'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🚫 Anuluj kliknięcie (zablokuj przeciąganie itemu)");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#00cec9");
+                }
+            };
 
-        Blockly.Blocks['give_item'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "daj graczowi przedmiot %1 w ilości %2",
-                    "args0": [
-                        { "type": "field_input", "name": "ITEM", "text": "diamond" },
-                        { "type": "field_number", "name": "AMOUNT", "value": 1 }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 120,
-                    "tooltip": "Daje przedmiot do ekwipunku gracza"
-                });
-            }
-        };
+            // CATEGORY 2: ZDARZENIA
+            Blockly.Blocks['event_join'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🟢 Gdy gracz dołączy do serwera");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_quit'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔴 Gdy gracz wyjdzie z serwera");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_death'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💀 Gdy gracz zginie");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_respawn'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("✨ Gdy gracz zrespawnuje się");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_chat'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💬 Gdy gracz napisze na czacie");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_command'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⌨️ Gdy ktoś wpisze komendę").appendField(new Blockly.FieldTextInput("/pomoc"), "CMD");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_block_break'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⛏️ Gdy gracz zniszczy blok").appendField(new Blockly.FieldTextInput("diamond_ore"), "BLOCK");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_block_place'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("📦 Gdy gracz postawi blok").appendField(new Blockly.FieldTextInput("tnt"), "BLOCK");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_right_click'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🖱️ Gdy gracz kliknie prawym przyciskiem myszy");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_left_click'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🖱️ Gdy gracz kliknie lewym przyciskiem myszy");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_damage'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🗡️ Gdy byt/gracz otrzyma obrażenia");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
+            Blockly.Blocks['event_projectile_hit'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🏹 Gdy strzała/pocisk trafi w cel");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e67e22");
+                }
+            };
 
-        Blockly.Blocks['remove_item'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "zabierz graczowi przedmiot %1 w ilości %2",
-                    "args0": [
-                        { "type": "field_input", "name": "ITEM", "text": "dirt" },
-                        { "type": "field_number", "name": "AMOUNT", "value": 1 }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 122,
-                    "tooltip": "Usuwa przedmiot z ekwipunku gracza"
-                });
-            }
-        };
+            // CATEGORY 3: AKCJE GRACZA
+            Blockly.Blocks['player_message'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💬 Wyślij wiadomość do gracza").appendField(new Blockly.FieldTextInput("&aWitaj na serwerze!"), "MSG");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_title'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("📺 Wyświetl Title").appendField(new Blockly.FieldTextInput("&6AVIP!"), "TITLE").appendField("Subtitle:").appendField(new Blockly.FieldTextInput("&7Miłej gry!"), "SUBTITLE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_actionbar'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("📲 Wyświetl ActionBar").appendField(new Blockly.FieldTextInput("&ePunkty: +100"), "TEXT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_teleport'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🌀 Teleportuj gracza do X:").appendField(new Blockly.FieldNumber(0), "X").appendField("Y:").appendField(new Blockly.FieldNumber(64), "Y").appendField("Z:").appendField(new Blockly.FieldNumber(0), "Z");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_give'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎁 Daj graczowi item").appendField(new Blockly.FieldTextInput("diamond"), "ITEM").appendField("ilość").appendField(new Blockly.FieldNumber(1), "COUNT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_heal'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("❤️ Ulecz gracza do pełna");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_feed'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🍖 Nakarm gracza do pełna");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_kick'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🥾 Wyrzuć gracza z powodem").appendField(new Blockly.FieldTextInput("&cZostałeś wyrzucony!"), "REASON");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_ban'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔨 Zabanuj gracza z powodem").appendField(new Blockly.FieldTextInput("&cZłamanie regulaminu"), "REASON");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_set_gamemode'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎮 Ustaw tryb gry na").appendField(new Blockly.FieldDropdown([["Survival", "survival"], ["Creative", "creative"], ["Adventure", "adventure"]]), "MODE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_set_fly'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🕊️ Ustaw latanie gracza na").appendField(new Blockly.FieldDropdown([["Włączone", "true"], ["Wyłączone", "false"]]), "FLY");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
+            Blockly.Blocks['player_set_op'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("👑 Daj/Zabierz OP gracza").appendField(new Blockly.FieldDropdown([["Daj OP", "op"], ["Zabierz OP", "deop"]]), "OP_STATE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#3498db");
+                }
+            };
 
-        Blockly.Blocks['clear_inventory'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wyczyść ekwipunek gracza",
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 124,
-                    "tooltip": "Usuwa wszystko z ekwipunku gracza"
-                });
-            }
-        };
+            // CATEGORY 4: ŚWIAT I BLOKI
+            Blockly.Blocks['world_set_block'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🧱 Ustaw blok").appendField(new Blockly.FieldTextInput("stone"), "BLOCK").appendField("na pozycji gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_lightning'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⚡ Uderz piorunem w miejsce gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_set_time'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("☀️ Ustaw czas w świecie na").appendField(new Blockly.FieldDropdown([["Dzień", "day"], ["Noc", "night"]]), "TIME");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_set_weather'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🌧️ Ustaw pogodę na").appendField(new Blockly.FieldDropdown([["Słoneczna", "sun"], ["Deszcz", "rain"]]), "WEATHER");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_create_explosion'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💥 Stwórz wybuch o sile").appendField(new Blockly.FieldNumber(4), "POWER").appendField("w miejscu gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_play_sound'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔊 Odegraj dźwięk").appendField(new Blockly.FieldTextInput("entity.experience_orb.pickup"), "SOUND").appendField("dla gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_spawn_particle'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("✨ Stwórz cząsteczki").appendField(new Blockly.FieldTextInput("flame"), "PARTICLE").appendField("ilość").appendField(new Blockly.FieldNumber(20), "COUNT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#2ecc71");
+                }
+            };
+            Blockly.Blocks['world_get_block_at'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔍 Blok poniżej gracza jest równy").appendField(new Blockly.FieldTextInput("emerald_block"), "TARGET");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#2ecc71");
+                }
+            };
 
-        Blockly.Blocks['open_gui'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "otwórz graczowi menu GUI o tytule %1 z rzędami %2 %3",
-                    "args0": [
-                        { "type": "field_input", "name": "GUITITLE", "text": "Sklep Serwera" },
-                        { "type": "field_number", "name": "ROWS", "value": 3 },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 125,
-                    "tooltip": "Otwiera interaktywne menu GUI z przedmiotami"
-                });
-            }
-        };
+            // CATEGORY 5: BYT I MOB
+            Blockly.Blocks['entity_spawn'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🧟 Zrespawnuj moba").appendField(new Blockly.FieldTextInput("zombie"), "MOB").appendField("w miejscu gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_kill'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("☠️ Zabij wszystkie moby w promieniu 10 bloków");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_burn'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔥 Podpal cel na").appendField(new Blockly.FieldNumber(5), "SECONDS").appendField("sekund");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_add_effect'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🧪 Nadaj efekt").appendField(new Blockly.FieldTextInput("speed"), "EFFECT").appendField("poziom").appendField(new Blockly.FieldNumber(2), "AMP");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_remove_effect'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🧪 Usuń efekt").appendField(new Blockly.FieldTextInput("speed"), "EFFECT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_set_name'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🏷️ Ustaw nazwę zespawnowanego moba na").appendField(new Blockly.FieldTextInput("&c&lBoss"), "NAME");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_set_health'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💔 Ustaw max zdrowie moba na").appendField(new Blockly.FieldNumber(100), "HEALTH");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
+            Blockly.Blocks['entity_push'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💨 Wyrzuć gracza w powietrze z siłą").appendField(new Blockly.FieldNumber(1.5), "FORCE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#9b59b6");
+                }
+            };
 
-        Blockly.Blocks['teleport_player'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "teleportuj gracza na X: %1 Y: %2 Z: %3",
-                    "args0": [
-                        { "type": "field_number", "name": "X", "value": 0 },
-                        { "type": "field_number", "name": "Y", "value": 100 },
-                        { "type": "field_number", "name": "Z", "value": 0 }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 140,
-                    "tooltip": "Teleportuje gracza w wybrane miejsce"
-                });
-            }
-        };
+            // CATEGORY 6: WARUNKI I LOGIKA
+            Blockly.Blocks['logic_if'] = {
+                init: function() {
+                    this.appendValueInput("IF").setCheck("Boolean").appendField("❓ Jeśli (Jeżeli)");
+                    this.appendStatementInput("DO").appendField("to wykonaj");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_if_else'] = {
+                init: function() {
+                    this.appendValueInput("IF").setCheck("Boolean").appendField("❓ Jeśli (Jeżeli)");
+                    this.appendStatementInput("DO").appendField("to wykonaj");
+                    this.appendStatementInput("ELSE").appendField("w przeciwnym razie");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_compare'] = {
+                init: function() {
+                    this.appendValueInput("A");
+                    this.appendDummyInput().appendField(new Blockly.FieldDropdown([["==", "EQ"], ["!=", "NEQ"], [">", "GT"], ["<", "LT"]]), "OP");
+                    this.appendValueInput("B");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_player_has_permission'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔑 Gracz posiada uprawnienie").appendField(new Blockly.FieldTextInput("svip.perm"), "PERM");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_player_has_item'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎒 Gracz posiada w ekwipunku").appendField(new Blockly.FieldTextInput("diamond"), "ITEM");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_player_is_op'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("👑 Gracz posiada ranga OP");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_player_gamemode_is'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎮 Tryb gry gracza to").appendField(new Blockly.FieldDropdown([["Creative", "creative"], ["Survival", "survival"]]), "MODE");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#f1c40f");
+                }
+            };
+            Blockly.Blocks['logic_is_sneaking'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("👟 Gracz skrada się (shift)");
+                    this.setOutput(true, "Boolean");
+                    this.setColour("#f1c40f");
+                }
+            };
 
-        Blockly.Blocks['play_sound_custom'] = {
-            init: function() {
-                this.appendDummyInput()
-                    .appendField("odtwórz dźwięk")
-                    .appendField(new Blockly.FieldDropdown([
-                        ["Poziom w górę (Levelup)", "entity.player.levelup"],
-                        ["Wybuch (Explode)", "entity.generic.explode"],
-                        ["Piorun (Lightning)", "entity.lightning_bolt.impact"],
-                        ["Strzała (Bow)", "entity.arrow.shoot"],
-                        ["Kliknięcie (Click)", "block.stone_button.click_on"],
-                        ["Totem (Totem)", "item.totem.use"],
-                        ["Mikstura (Drink)", "entity.generic.drink"],
-                        ["Uderzenie (Hit)", "entity.player.attack.strong"],
-                        ["Dzwonek (Bell)", "block.bell.use"]
-                    ]), "SOUND")
-                    .appendField("graczowi");
-                this.setPreviousStatement(true, null);
-                this.setNextStatement(true, null);
-                this.setColour(160);
-                this.tooltip = "Odtwarza efekt dźwiękowy z listy";
-            }
-        };
+            // CATEGORY 7: ZMIENNE I LICZBY
+            Blockly.Blocks['var_set'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💾 Ustaw zmienną").appendField(new Blockly.FieldTextInput("{punkty::%player%}"), "VAR").appendField("na").appendField(new Blockly.FieldTextInput("10"), "VAL");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#1abc9c");
+                }
+            };
+            Blockly.Blocks['var_add'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("➕ Dodaj").appendField(new Blockly.FieldNumber(1), "NUM").appendField("do zmiennej").appendField(new Blockly.FieldTextInput("{punkty::%player%}"), "VAR");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#1abc9c");
+                }
+            };
+            Blockly.Blocks['var_subtract'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("➖ Odejmij").appendField(new Blockly.FieldNumber(1), "NUM").appendField("od zmiennej").appendField(new Blockly.FieldTextInput("{punkty::%player%}"), "VAR");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#1abc9c");
+                }
+            };
+            Blockly.Blocks['math_number'] = {
+                init: function() {
+                    this.appendDummyInput().appendField(new Blockly.FieldNumber(0), "NUM");
+                    this.setOutput(true, "Number");
+                    this.setColour("#1abc9c");
+                }
+            };
+            Blockly.Blocks['math_random'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎲 Losowa liczba od").appendField(new Blockly.FieldNumber(1), "MIN").appendField("do").appendField(new Blockly.FieldNumber(100), "MAX");
+                    this.setOutput(true, "Number");
+                    this.setColour("#1abc9c");
+                }
+            };
+            Blockly.Blocks['string_concat'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔤 Połącz tekst:").appendField(new Blockly.FieldTextInput("Gracz: "), "T1").appendField("+").appendField(new Blockly.FieldTextInput("Wita!"), "T2");
+                    this.setOutput(true, "String");
+                    this.setColour("#1abc9c");
+                }
+            };
+            Blockly.Blocks['var_get'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔍 Pobierz zmienną").appendField(new Blockly.FieldTextInput("{punkty::%player%}"), "VAR");
+                    this.setOutput(true, null);
+                    this.setColour("#1abc9c");
+                }
+            };
 
-        Blockly.Blocks['command_dynamic_sound'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "stwórz komendę /dzwiek [wpisz w grze nazwa dźwięku]",
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 165,
-                    "tooltip": "Tworzy komendę /dzwiek <dźwięk>"
-                });
-            }
-        };
+            // CATEGORY 8: PĘTLE I CZAS
+            Blockly.Blocks['time_wait'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⏱️ Odczekaj").appendField(new Blockly.FieldNumber(5), "TIME").appendField(new Blockly.FieldDropdown([["sekund", "seconds"], ["ticków", "ticks"]]), "UNIT");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e74c3c");
+                }
+            };
+            Blockly.Blocks['time_periodical'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔄 Wykonuj co").appendField(new Blockly.FieldNumber(10), "TIME").appendField(new Blockly.FieldDropdown([["sekund", "seconds"], ["minut", "minutes"]]), "UNIT");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setColour("#e74c3c");
+                }
+            };
+            Blockly.Blocks['loop_repeat'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔁 Powtórz").appendField(new Blockly.FieldNumber(5), "TIMES").appendField("raz(y)");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e74c3c");
+                }
+            };
+            Blockly.Blocks['loop_all_players'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("👥 Zapętlij wszystkich graczy na serwerze");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e74c3c");
+                }
+            };
+            Blockly.Blocks['loop_all_entities'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🐾 Zapętlij wszystkie moby w pobliżu");
+                    this.appendStatementInput("DO").appendField("wykonaj");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e74c3c");
+                }
+            };
 
-        Blockly.Blocks['execute_command'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wykonaj komendę w grze /%1",
-                    "args0": [{ "type": "field_input", "name": "CMD", "text": "heal" }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 175,
-                    "tooltip": "Wykonuje komendę z uprawnieniami serwera"
-                });
-            }
-        };
+            // CATEGORY 9: PRZEDMIOTY I ARMOR
+            Blockly.Blocks['item_create'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🗡️ Stwórz przedmiot").appendField(new Blockly.FieldTextInput("diamond_sword"), "ITEM").appendField("nazwa:").appendField(new Blockly.FieldTextInput("&cMiecz"), "NAME");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#d35400");
+                }
+            };
+            Blockly.Blocks['item_enchant'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("✨ Nałóż enchant").appendField(new Blockly.FieldTextInput("sharpness"), "ENCHANT").appendField("poziom").appendField(new Blockly.FieldNumber(5), "LVL");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#d35400");
+                }
+            };
+            Blockly.Blocks['item_set_lore'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("📜 Ustaw lore przedmiotu na").appendField(new Blockly.FieldTextInput("&7Epicki przedmiot"), "LORE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#d35400");
+                }
+            };
+            Blockly.Blocks['item_equip_armor'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🛡️ Załóż graczowi").appendField(new Blockly.FieldDropdown([["Hełm", "helmet"], ["Krata", "chestplate"]]), "SLOT").appendField("item:").appendField(new Blockly.FieldTextInput("diamond_helmet"), "ITEM");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#d35400");
+                }
+            };
+            Blockly.Blocks['item_clear_inventory'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🧹 Wyczyść ekwipunek gracza");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#d35400");
+                }
+            };
+            Blockly.Blocks['item_repair_hand'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🔨 Napraw trzymany przedmiot");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#d35400");
+                }
+            };
 
-        Blockly.Blocks['set_level'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "ustaw poziom doświadczenia gracza na %1",
-                    "args0": [{ "type": "field_number", "name": "LEVEL", "value": 30 }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 130,
-                    "tooltip": "Zmienia poziom XP gracza"
-                });
-            }
-        };
+            // CATEGORY 10: DŹWIĘKI I EFEKTY
+            Blockly.Blocks['effect_playsound_custom'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎶 Odegraj dźwięk").appendField(new Blockly.FieldTextInput("ui.toast.challenge_complete"), "SND");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e84393");
+                }
+            };
+            Blockly.Blocks['effect_particle_ring'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⭕ Stwórz pierścień cząsteczek").appendField(new Blockly.FieldTextInput("end_rod"), "PART");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e84393");
+                }
+            };
+            Blockly.Blocks['effect_bossbar'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("📊 Pokaż BossBar z tekstem").appendField(new Blockly.FieldTextInput("&cEvent!"), "TITLE");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e84393");
+                }
+            };
+            Blockly.Blocks['effect_play_note'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🎵 Zagraj nutę").appendField(new Blockly.FieldDropdown([["Pianino", "piano"], ["Bas", "bass"]]), "INST");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e84393");
+                }
+            };
+            Blockly.Blocks['effect_blind_player'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🙈 Oślep gracza na 5 sekund");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#e84393");
+                }
+            };
 
-        Blockly.Blocks['add_level'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "dodaj do poziomu doświadczenia gracza %1",
-                    "args0": [{ "type": "field_number", "name": "LEVEL", "value": 5 }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 132,
-                    "tooltip": "Dodaje poziomy XP"
-                });
-            }
-        };
+            // CATEGORY 11: WALKA
+            Blockly.Blocks['combat_damage_attacker'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💥 Zadaj atakującemu obrażenia").appendField(new Blockly.FieldNumber(5), "DMG");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#b2bec3");
+                }
+            };
+            Blockly.Blocks['combat_damage_victim'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🩸 Zadaj ofierze obrażenia").appendField(new Blockly.FieldNumber(10), "DMG");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#b2bec3");
+                }
+            };
+            Blockly.Blocks['combat_apply_knockback'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💨 Odepchnij ofiarę do tyłu");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#b2bec3");
+                }
+            };
+            Blockly.Blocks['combat_set_combattag'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⚔️ Nadaj status Anty-Logout na").appendField(new Blockly.FieldNumber(20), "SEC").appendField("sekund");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#b2bec3");
+                }
+            };
+            Blockly.Blocks['combat_clear_effects'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🧼 Oczyść gracza z mikstur");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#b2bec3");
+                }
+            };
 
-        Blockly.Blocks['heal_player'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "uzdrów gracza (pełne zdrowie)",
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 135,
-                    "tooltip": "Regeneruje życie gracza do max"
-                });
-            }
-        };
-
-        Blockly.Blocks['feed_player'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "nakarm gracza (pełny głód)",
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 137,
-                    "tooltip": "Uzupełnia pasek głodu"
-                });
-            }
-        };
-
-        Blockly.Blocks['set_gamemode'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "zmień tryb gry gracza na %1",
-                    "args0": [{
-                        "type": "field_dropdown",
-                        "name": "MODE",
-                        "options": [
-                            ["Przetrwanie (Survival)", "survival"],
-                            ["Kreatywny (Creative)", "creative"],
-                            ["Przygoda (Adventure)", "adventure"],
-                            ["Obserwator (Spectator)", "spectator"]
-                        ]
-                    }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 145,
-                    "tooltip": "Zmienia tryb gry (Gamemode)"
-                });
-            }
-        };
-
-        Blockly.Blocks['apply_potion'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "nałóż efekt %1 na %2 sekund (siła: %3)",
-                    "args0": [
-                        { "type": "field_input", "name": "POTION", "text": "speed" },
-                        { "type": "field_number", "name": "TIME", "value": 30 },
-                        { "type": "field_number", "name": "AMP", "value": 1 }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 150,
-                    "tooltip": "Nakłada efekt mikstury"
-                });
-            }
-        };
-
-        Blockly.Blocks['spawn_lightning'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "uważaj: uderz piorunem w gracza",
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 155,
-                    "tooltip": "Uderza piorunem w pozycję gracza"
-                });
-            }
-        };
-
-        Blockly.Blocks['spawn_explosion'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "stwórz wybuch w miejscu gracza (siła: %1)",
-                    "args0": [{ "type": "field_number", "name": "POWER", "value": 3 }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 157,
-                    "tooltip": "Tworzy eksplozję"
-                });
-            }
-        };
-
-        Blockly.Blocks['kick_player'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wyrzuć gracza z serwera z powodem %1",
-                    "args0": [{ "type": "field_input", "name": "REASON", "text": "Zostales wyrzucony!" }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 110,
-                    "tooltip": "Wyrzuca gracza z serwera"
-                });
-            }
-        };
-
-        Blockly.Blocks['ban_player'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "zbanuj gracza na serwerze z powodem %1",
-                    "args0": [{ "type": "field_input", "name": "REASON", "text": "Ban za cheaty!" }],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 105,
-                    "tooltip": "Permanentnie banuje gracza"
-                });
-            }
-        };
-
-        Blockly.Blocks['if_statement'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "jeśli warunek: %1 to %2 %3",
-                    "args0": [
-                        { "type": "field_input", "name": "CONDITION", "text": "player has permission \"admin\"" },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 10,
-                    "tooltip": "Instrukcja warunkowa (if)"
-                });
-            }
-        };
-
-        Blockly.Blocks['repeat_loop'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "powtórz %1 razy: %2 %3",
-                    "args0": [
-                        { "type": "field_number", "name": "TIMES", "value": 5 },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 20,
-                    "tooltip": "Pętla powtarzająca akcje"
-                });
-            }
-        };
-
-        Blockly.Blocks['while_loop'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "dopóki warunek %1 jest spełniony: %2 %3",
-                    "args0": [
-                        { "type": "field_input", "name": "COND", "text": "zmienna < 10" },
-                        { "type": "input_dummy" },
-                        { "type": "input_statement", "name": "DO" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 25,
-                    "tooltip": "Pętla While"
-                });
-            }
-        };
-
-        Blockly.Blocks['set_variable'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "ustaw zmienną %1 na wartość %2",
-                    "args0": [
-                        { "type": "field_input", "name": "VAR", "text": "punkty" },
-                        { "type": "field_input", "name": "VAL", "text": "10" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 40,
-                    "tooltip": "Przypisuje wartość do zmiennej"
-                });
-            }
-        };
-
-        Blockly.Blocks['add_variable'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "dodaj do zmiennej %1 wartość %2",
-                    "args0": [
-                        { "type": "field_input", "name": "VAR", "text": "punkty" },
-                        { "type": "field_input", "name": "VAL", "text": "1" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 50,
-                    "tooltip": "Zwiększa wartość zmiennej"
-                });
-            }
-        };
-
-        Blockly.Blocks['math_operation'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "wykonaj operację na zmiennej %1 : %2 %3",
-                    "args0": [
-                        { "type": "field_input", "name": "VAR", "text": "wynik" },
-                        {
-                            "type": "field_dropdown",
-                            "name": "OP",
-                            "options": [
-                                ["Pomnóż przez (*)", "multiply"],
-                                ["Podziel przez (/)", "divide"],
-                                ["Odejmij (-)", "subtract"]
-                            ]
-                        },
-                        { "type": "field_input", "name": "VAL", "text": "2" }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 55,
-                    "tooltip": "Zaawansowane działania matematyczne"
-                });
-            }
-        };
-
-        Blockly.Blocks['get_random_number'] = {
-            init: function() {
-                this.jsonInit({
-                    "message0": "ustaw zmienną %1 na losową liczbę od %2 do %3",
-                    "args0": [
-                        { "type": "field_input", "name": "VAR", "text": "los" },
-                        { "type": "field_number", "name": "MIN", "value": 1 },
-                        { "type": "field_number", "name": "MAX", "value": 100 }
-                    ],
-                    "previousStatement": null,
-                    "nextStatement": null,
-                    "colour": 60,
-                    "tooltip": "Losuje liczbę z zakresu"
-                });
-            }
-        };
-
-
-        // --- GENERATOR KODU ---
-        const generator = javascript.javascriptGenerator;
-
-        function getStatements(block, statementName) {
-            let format = document.getElementById('formatSelect').value;
-            let statementsCode = generator.statementToCode(block, statementName);
-            if (!statementsCode.trim()) {
-                if (format === 'js') return '    // brak akcji\n';
-                if (format === 'python') return '    pass\n';
-                if (format === 'html') return '        <!-- brak akcji -->\n';
-                if (format === 'commands') return '    # brak komend wewnątrz\n';
-                return '    # brak akcji\n';
-            }
-            if (format === 'skript') {
-                return statementsCode.split('\n').map(line => line ? '        ' + line.trim() : '').join('\n');
-            }
-            return statementsCode;
+            // CATEGORY 12: ZAAWANSOWANE
+            Blockly.Blocks['adv_command_create'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("⚙️ Stwórz prostą komendę /").appendField(new Blockly.FieldTextInput("sklep"), "CMD");
+                    this.appendStatementInput("DO").appendField("po jej wpisaniu");
+                    this.setColour("#6c5ce7");
+                }
+            };
+            Blockly.Blocks['adv_execute_console'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("💻 Wykonaj w konsoli:").appendField(new Blockly.FieldTextInput("give %player% diamond 1"), "CMD");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
+            Blockly.Blocks['adv_broadcast'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("📢 Ogłoś do CAŁEGO serwera:").appendField(new Blockly.FieldTextInput("&cOgłoszenie!"), "MSG");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
+            Blockly.Blocks['adv_webhook_log'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🌐 Wyślij log do Webhooka:").appendField(new Blockly.FieldTextInput("Log event"), "LOG");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
+            Blockly.Blocks['adv_cancel_event'] = {
+                init: function() {
+                    this.appendDummyInput().appendField("🛑 Anuluj zdarzenie (cancel event)");
+                    this.setPreviousStatement(true);
+                    this.setNextStatement(true);
+                    this.setColour("#6c5ce7");
+                }
+            };
         }
 
-        generator.forBlock['on_event'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let eventType = block.getFieldValue('EVENT_TYPE');
-            let inner = getStatements(block, 'DO');
+        // ----------------------------------------------------
+        // CODE GENERATOR ENGINE UPDATE (Includes New Command Blocks)
+        // ----------------------------------------------------
+        function generateSkriptFromBlock(block, indentLevel = 0) {
+            if (!block) return "";
+            const indent = "\t".repeat(indentLevel);
+            let code = "";
 
-            if (format === 'skript') {
-                let map = { join: 'on join:', quit: 'on quit:', chat: 'on chat:', death: 'on death:', respawn: 'on respawn:', pickup: 'on pickup:', drop: 'on drop:' };
-                return `${map[eventType]}\n${inner}`;
-            } else if (format === 'js') {
-                let map = { join: 'server.on("playerJoin", (player) => {', quit: 'server.on("playerQuit", (player) => {', chat: 'server.on("playerChat", (player, message) => {', death: 'server.on("playerDeath", (player) => {', respawn: 'server.on("playerRespawn", (player) => {', pickup: 'server.on("playerPickup", (player, item) => {', drop: 'server.on("playerDrop", (player, item) => {' };
-                return `${map[eventType]}\n${inner}});\n\n`;
-            } else if (format === 'python') {
-                let map = { join: 'def on_player_join(player):', quit: 'def on_player_quit(player):', chat: 'def on_player_chat(player, message):', death: 'def on_player_death(player):', respawn: 'def on_player_respawn(player):', pickup: 'def on_player_pickup(player, item):', drop: 'def on_player_drop(player, item):' };
-                return `${map[eventType]}\n${inner}\n`;
-            } else if (format === 'html') {
-                return `<div data-event="${eventType}">\n${inner}</div>\n`;
-            } else if (format === 'commands') {
-                return `# Zdarzenie: ${eventType}\n${inner}`;
+            switch (block.type) {
+                // Command Execution Category
+                case 'cmd_declare_full':
+                    code += `command /${block.getFieldValue('NAME')}:\n` +
+                            `${indent}\tpermission: ${block.getFieldValue('PERM')}\n` +
+                            `${indent}\tpermission message: "&cBrak permisji (${block.getFieldValue('PERM')})!"\n` +
+                            `${indent}\ttrigger:\n` + generateSkriptChildren(block, indentLevel + 2);
+                    break;
+                case 'cmd_execute_as':
+                    const target = block.getFieldValue('TARGET');
+                    if (target === 'console') {
+                        code += `${indent}execute console command "${block.getFieldValue('CMD')}"\n`;
+                    } else if (target === 'op') {
+                        code += `${indent}make player execute command "${block.getFieldValue('CMD')}" with op permissions\n`;
+                    } else {
+                        code += `${indent}make player execute command "${block.getFieldValue('CMD')}"\n`;
+                    }
+                    break;
+                case 'cmd_dispatch_all':
+                    code += `${indent}loop all players:\n${indent}\tmake loop-player execute command "${block.getFieldValue('CMD')}"\n`;
+                    break;
+                case 'cmd_cooldown':
+                    code += `${indent}set {_cd} to difference between {cooldown::%player%} and now\n` +
+                            `${indent}if {_cd} is less than ${block.getFieldValue('SEC')} seconds:\n` +
+                            `${indent}\tsend "&cOdczekaj chwilę przed ponownym użyciem!" to player\n` +
+                            `${indent}\tstop\n` +
+                            `${indent}set {cooldown::%player%} to now\n`;
+                    break;
+                case 'cmd_permission_check':
+                    code += `${indent}if player doesn't have permission "${block.getFieldValue('PERM')}":\n` +
+                            `${indent}\tsend "${block.getFieldValue('MSG')}" to player\n` +
+                            `${indent}\tstop\n`;
+                    break;
+
+                // Player Economy & Extra
+                case 'player_money_give':
+                    code += `${indent}add ${block.getFieldValue('AMOUNT')} to player's balance\n`;
+                    break;
+                case 'player_money_take':
+                    code += `${indent}remove ${block.getFieldValue('AMOUNT')} from player's balance\n`;
+                    break;
+
+                // GUI
+                case 'gui_open_chest':
+                    code += `${indent}open chest with ${block.getFieldValue('ROWS')} rows named "${block.getFieldValue('TITLE')}" to player\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'gui_format_slot':
+                    code += `${indent}format slot ${block.getFieldValue('SLOT')} of player with ${block.getFieldValue('ITEM')} named "${block.getFieldValue('NAME')}" to run:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'gui_open_virtual':
+                    code += `${indent}open virtual chest inventory named "${block.getFieldValue('TITLE')}" to player\n`;
+                    break;
+                case 'gui_unstealable_slot':
+                    code += `${indent}make slot ${block.getFieldValue('SLOT')} of player unstealable\n`;
+                    break;
+                case 'gui_close':
+                    code += `${indent}close player's inventory\n`;
+                    break;
+                case 'gui_click_cancel':
+                    code += `${indent}cancel event\n`;
+                    break;
+
+                // Events
+                case 'event_join':
+                    code += `on join:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_quit':
+                    code += `on quit:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_death':
+                    code += `on death of player:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_respawn':
+                    code += `on respawn:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_chat':
+                    code += `on chat:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_command':
+                    code += `on command "${block.getFieldValue('CMD')}":\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_block_break':
+                    code += `on break of ${block.getFieldValue('BLOCK')}:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_block_place':
+                    code += `on place of ${block.getFieldValue('BLOCK')}:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+                case 'event_right_click':
+                    code += `on rightclick:\n` + generateSkriptChildren(block, indentLevel + 1);
+                    break;
+
+                // Player Actions
+                case 'player_message':
+                    code += `${indent}send "${block.getFieldValue('MSG')}" to player\n`;
+                    break;
+                case 'player_title':
+                    code += `${indent}send player title "${block.getFieldValue('TITLE')}" with subtitle "${block.getFieldValue('SUBTITLE')}" for 3 seconds\n`;
+                    break;
+                case 'player_actionbar':
+                    code += `${indent}send action bar "${block.getFieldValue('TEXT')}" to player\n`;
+                    break;
+                case 'player_teleport':
+                    code += `${indent}teleport player to location(${block.getFieldValue('X')}, ${block.getFieldValue('Y')}, ${block.getFieldValue('Z')})\n`;
+                    break;
+                case 'player_give':
+                    code += `${indent}give ${block.getFieldValue('COUNT')} ${block.getFieldValue('ITEM')} to player\n`;
+                    break;
+                case 'player_heal':
+                    code += `${indent}heal player\n`;
+                    break;
+                case 'player_feed':
+                    code += `${indent}feed player\n`;
+                    break;
+                case 'player_kick':
+                    code += `${indent}kick player due to "${block.getFieldValue('REASON')}"\n`;
+                    break;
+                case 'player_ban':
+                    code += `${indent}ban player due to "${block.getFieldValue('REASON')}"\n`;
+                    break;
+                case 'player_set_gamemode':
+                    code += `${indent}set player's gamemode to ${block.getFieldValue('MODE')}\n`;
+                    break;
+
+                // Advanced Commands & Logic
+                case 'adv_command_create':
+                    code += `command /${block.getFieldValue('CMD')}:\n${indent}\ttrigger:\n` + generateSkriptChildren(block, indentLevel + 2);
+                    break;
+                case 'adv_execute_console':
+                    code += `${indent}execute console command "${block.getFieldValue('CMD')}"\n`;
+                    break;
+                case 'adv_broadcast':
+                    code += `${indent}broadcast "${block.getFieldValue('MSG')}"\n`;
+                    break;
+                case 'adv_cancel_event':
+                    code += `${indent}cancel event\n`;
+                    break;
+
+                default:
+                    code += `${indent}# [Klocek: ${block.type}]\n`;
+                    break;
             }
-            return '';
-        };
 
-        generator.forBlock['on_command'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let cmd = block.getFieldValue('CMD');
-            let inner = getStatements(block, 'DO');
-
-            if (format === 'skript') return `command /${cmd}:\n    trigger:\n${inner}`;
-            if (format === 'js') return `server.command("${cmd}", (player, args) => {\n${inner}});\n\n`;
-            if (format === 'python') return `@server.command("${cmd}")\ndef cmd_${cmd}(player, args):\n${inner}\n`;
-            if (format === 'html') return `<div data-command="${cmd}">\n${inner}</div>\n`;
-            if (format === 'commands') return `# Komenda /${cmd}\n${inner}`;
-            return '';
-        };
-
-        generator.forBlock['do_action'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let actionName = block.getFieldValue('ACTION_NAME');
-            let inner = getStatements(block, 'DO');
-
-            if (format === 'skript') return `function ${actionName}():\n${inner}`;
-            if (format === 'js') return `function ${actionName}() {\n${inner}}\n`;
-            if (format === 'python') return `def ${actionName}():\n${inner}\n`;
-            if (format === 'html') return `<div id="action-${actionName}">\n${inner}</div>\n`;
-            if (format === 'commands') return `# Czynność: ${actionName}\n${inner}`;
-            return '';
-        };
-
-        generator.forBlock['if_then_action'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let cond = block.getFieldValue('CONDITION');
-            let inner = getStatements(block, 'DO');
-
-            if (format === 'skript') return `    if ${cond}:\n${inner}`;
-            if (format === 'js') return `    if (${cond}) {\n${inner}    }\n`;
-            if (format === 'python') return `    if ${cond}:\n${inner}`;
-            if (format === 'html') return `    <!-- if ${cond} -->\n${inner}`;
-            if (format === 'commands') return `    execute if ${cond} run ...\n`;
-            return '';
-        };
-
-        generator.forBlock['if_else_action'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let cond = block.getFieldValue('CONDITION');
-            let trueDo = getStatements(block, 'TRUE_DO');
-            let falseDo = getStatements(block, 'FALSE_DO');
-
-            if (format === 'skript') return `    if ${cond}:\n${trueDo}    else:\n${falseDo}`;
-            if (format === 'js') return `    if (${cond}) {\n${trueDo}    } else {\n${falseDo}    }\n`;
-            if (format === 'python') return `    if ${cond}:\n${trueDo}    else:\n${falseDo}`;
-            return `    if/else (${cond})\n`;
-        };
-
-        generator.forBlock['wait_delay'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let seconds = block.getFieldValue('SECONDS');
-            let inner = getStatements(block, 'DO');
-
-            if (format === 'skript') return `    wait ${seconds} seconds\n${inner}`;
-            if (format === 'js') return `    setTimeout(() => {\n${inner}    }, ${seconds * 1000});\n`;
-            if (format === 'python') return `    time.sleep(${seconds})\n${inner}`;
-            if (format === 'html') return `    <!-- wait ${seconds}s -->\n${inner}`;
-            if (format === 'commands') return `    # schedule function ... ${seconds}s\n`;
-            return '';
-        };
-
-        generator.forBlock['open_gui'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let title = block.getFieldValue('GUITITLE');
-            let rows = block.getFieldValue('ROWS');
-            let inner = getStatements(block, 'DO');
-
-            if (format === 'skript') {
-                return `    open chest inventory with ${rows} named "${title}" to player\n` +
-                       `    set slot indices of open inventory of player to air\n${inner}`;
-            } else if (format === 'js') {
-                return `    let gui = server.createGUI("${title}", ${rows * 9});\n${inner}\n    player.openGUI(gui);\n`;
-            } else if (format === 'python') {
-                return `    gui = server.create_gui("${title}", ${rows * 9})\n${inner}\n    player.open_gui(gui)\n`;
-            } else if (format === 'html') {
-                return `    <div class="gui-menu" data-title="${title}" data-rows="${rows}">\n${inner}    </div>\n`;
-            } else if (format === 'commands') {
-                return `    # Otwórz GUI: ${title} (${rows} rzędów)\n${inner}`;
+            if (block.nextConnection && block.nextConnection.targetBlock()) {
+                code += generateSkriptFromBlock(block.nextConnection.targetBlock(), indentLevel);
             }
-            return '';
-        };
 
-        generator.forBlock['send_message'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let dispType = block.getFieldValue('DISP_TYPE');
-            let msg = block.getFieldValue('MSG');
-
-            if (format === 'skript') {
-                if (dispType === 'title') return `    send title "${msg}" with subtitle "" to player\n`;
-                if (dispType === 'sidebar') return `    set sidebar of player to "${msg}"\n`;
-                if (dispType === 'bossbar') return `    create bossbar named "bb" with title "${msg}" and color green for player\n`;
-                return `    send "${msg}"\n`;
-            }
-            if (format === 'js') return `    player.sendDisplay("${dispType}", "${msg}");\n`;
-            if (format === 'python') return `    player.send_display("${dispType}", "${msg}")\n`;
-            if (format === 'html') return `    <div class="display-${dispType}">${msg}</div>\n`;
-            if (format === 'commands') return `    title @s title {"text":"${msg}"}\n`;
-            return '';
-        };
-
-        generator.forBlock['send_pm'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let target = block.getFieldValue('TARGET');
-            let msg = block.getFieldValue('MSG');
-            if (format === 'skript') return `    message "${msg}" to ${target}\n`;
-            if (format === 'js') return `    server.getPlayer("${target}").sendMessage("${msg}");\n`;
-            return `    # PM do ${target}: ${msg}\n`;
-        };
-
-        generator.forBlock['send_actionbar'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let msg = block.getFieldValue('MSG');
-            if (format === 'skript') return `    send action bar "${msg}" to player\n`;
-            if (format === 'js') return `    player.sendActionBar("${msg}");\n`;
-            return `    title @s actionbar {"text":"${msg}"}\n`;
-        };
-
-        generator.forBlock['broadcast_msg'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let msg = block.getFieldValue('MSG');
-            if (format === 'skript') return `    broadcast "${msg}"\n`;
-            if (format === 'js') return `    server.broadcast("${msg}");\n`;
-            return `    tellraw @a "${msg}"\n`;
-        };
-
-        generator.forBoard = generator.forBlock; // Alias zabezpieczający
-
-        generator.forBlock['console_log'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let text = block.getFieldValue('TEXT');
-            if (format === 'skript') return `    send console log "${text}"\n`;
-            if (format === 'js') return `    console.log("${text}");\n`;
-            return `    print("${text}")\n`;
-        };
-
-        generator.forBlock['give_item'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let item = block.getFieldValue('ITEM');
-            let amount = block.getFieldValue('AMOUNT');
-            if (format === 'skript') return `    give ${amount} of ${item} to player\n`;
-            if (format === 'js') return `    player.inventory.addItem("${item}", ${amount});\n`;
-            return `    give @s ${item} ${amount}\n`;
-        };
-
-        generator.forBlock['remove_item'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let item = block.getFieldValue('ITEM');
-            let amount = block.getFieldValue('AMOUNT');
-            if (format === 'skript') return `    remove ${amount} of ${item} from player\n`;
-            return `    clear @s ${item} ${amount}\n`;
-        };
-
-        generator.forBlock['clear_inventory'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            if (format === 'skript') return `    clear inventory of player\n`;
-            return `    clear @s\n`;
-        };
-
-        generator.forBlock['teleport_player'] = function(block) {
-            let format = document.getElementById('formatSelect').value;
-            let x = block.getFieldValue('X');
-            let y = block.getFieldValue('Y');
-            let z = block.getFieldValue('Z');
-            if (format === 'skript') return `    teleport player to location(${x}, ${y}, ${z}, world)\n`;
-            return `    teleport @s ${x} ${y} ${z}\n`;
-        };
-
-        generator.forBlock['play_sound_custom'] = function(block) {
-            let sound = block.getFieldValue('SOUND');
-            return `    play sound "${sound}" with volume 1 and pitch 1 to player\n`;
-        };
-
-        generator.forBlock['command_dynamic_sound'] = function(block) {
-            return `command /dzwiek <text>:\n    trigger:\n        play sound arg-1 with volume 1 and pitch 1 to player\n`;
-        };
-
-        generator.forBlock['execute_command'] = function(block) {
-            let cmd = block.getFieldValue('CMD');
-            return `    execute console command "${cmd}"\n`;
-        };
-
-        generator.forBlock['set_level'] = function(block) {
-            let lvl = block.getFieldValue('LEVEL');
-            return `    set player level to ${lvl}\n`;
-        };
-
-        generator.forBlock['add_level'] = function(block) {
-            let lvl = block.getFieldValue('LEVEL');
-            return `    add ${lvl} to player level\n`;
-        };
-
-        generator.forBlock['heal_player'] = function(block) {
-            return `    heal player\n`;
-        };
-
-        generator.forBlock['feed_player'] = function(block) {
-            return `    set food level of player to 20\n`;
-        };
-
-        generator.forBlock['set_gamemode'] = function(block) {
-            let mode = block.getFieldValue('MODE');
-            return `    set player gamemode to ${mode}\n`;
-        };
-
-        generator.forBlock['apply_potion'] = function(block) {
-            let pot = block.getFieldValue('POTION');
-            let time = block.getFieldValue('TIME');
-            let amp = block.getFieldValue('AMP');
-            return `    apply effect ${pot} of tier ${amp} to player for ${time} seconds\n`;
-        };
-
-        generator.forBlock['spawn_lightning'] = function(block) {
-            return `    strike lightning at player\n`;
-        };
-
-        generator.forBlock['spawn_explosion'] = function(block) {
-            let p = block.getFieldValue('POWER');
-            return `    create explosion of force ${p} at player\n`;
-        };
-
-        generator.forBlock['kick_player'] = function(block) {
-            let r = block.getFieldValue('REASON');
-            return `    kick player due to "${r}"\n`;
-        };
-
-        generator.forBlock['ban_player'] = function(block) {
-            let r = block.getFieldValue('REASON');
-            return `    ban player due to "${r}"\n`;
-        };
-
-        generator.forBlock['if_statement'] = function(block) {
-            let cond = block.getFieldValue('CONDITION');
-            let inner = getStatements(block, 'DO');
-            return `    if ${cond}:\n${inner}`;
-        };
-
-        generator.forBlock['repeat_loop'] = function(block) {
-            let times = block.getFieldValue('TIMES');
-            let inner = getStatements(block, 'DO');
-            return `    loop ${times} times:\n${inner}`;
-        };
-
-        generator.forBlock['while_loop'] = function(block) {
-            let cond = block.getFieldValue('COND');
-            let inner = getStatements(block, 'DO');
-            return `    while ${cond}:\n${inner}`;
-        };
-
-        generator.forBlock['set_variable'] = function(block) {
-            let v = block.getFieldValue('VAR');
-            let val = block.getFieldValue('VAL');
-            return `    set {_${v}} to ${val}\n`;
-        };
-
-        generator.forBlock['add_variable'] = function(block) {
-            let v = block.getFieldValue('VAR');
-            let val = block.getFieldValue('VAL');
-            return `    add ${val} to {_${v}}\n`;
-        };
-
-        generator.forBlock['math_operation'] = function(block) {
-            let v = block.getFieldValue('VAR');
-            let op = block.getFieldValue('OP');
-            let val = block.getFieldValue('VAL');
-            let symbol = op === 'multiply' ? '*' : (op === 'divide' ? '/' : '-');
-            return `    set {_${v}} to {_${v}} ${symbol} ${val}\n`;
-        };
-
-        generator.forBlock['get_random_number'] = function(block) {
-            let v = block.getFieldValue('VAR');
-            let min = block.getFieldValue('MIN');
-            let max = block.getFieldValue('MAX');
-            return `    set {_${v}} to a random integer between ${min} and ${max}\n`;
-        };
-
-
-        // --- FUNKCJE INTERFEJSU I EDYTORA GUI ---
-        function updateCode() {
-            let code = generator.workspaceToCode(workspace);
-            let format = document.getElementById('formatSelect').value;
-            let headerComment = `# Wygenerowano automatycznie dla formatu: ${format.toUpperCase()}\n\n`;
-            document.getElementById('outputCode').value = headerComment + code;
+            return code;
         }
 
-        function copyCode() {
-            let textarea = document.getElementById('outputCode');
-            textarea.select();
-            document.execCommand('copy');
-            alert('Skopiowano wygenerowany kod do schowka!');
-        }
-
-        function openGuiModal() {
-            document.getElementById('guiModal').style.display = 'flex';
-            updateGuiGridSize();
-        }
-
-        function closeGuiModal() {
-            document.getElementById('guiModal').style.display = 'none';
-        }
-
-        function updateGuiGridSize() {
-            let rows = parseInt(document.getElementById('guiRowsSelect').value);
-            let container = document.getElementById('guiGridContainer');
-            container.innerHTML = '';
-            let totalSlots = rows * 9;
-            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-
-            for (let i = 0; i < totalSlots; i++) {
-                let slot = document.createElement('div');
-                slot.className = 'gui-slot';
-                slot.innerHTML = `${i}<input type="text" placeholder="item" oninput="updateSlotLabel(this, ${i})">`;
-                container.appendChild(slot);
-            }
-        }
-
-        function updateSlotLabel(input, index) {
-            let slot = input.parentElement;
-            if (input.value.trim() !== '') {
-                slot.style.background = '#0e639c';
-                slot.style.color = '#fff';
-                slot.title = input.value;
+        // Updated Preset Loader to include new Command Presets
+        function loadPreset(key) {
+            if (key === 'cmd_vip') {
+                switchMainTab('blocks');
+                const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+                    <block type="cmd_declare_full" x="40" y="40">
+                        <field name="NAME">vip</field>
+                        <field name="PERM">gracz.vip</field>
+                        <statement name="DO">
+                            <block type="cmd_cooldown">
+                                <field name="SEC">60</field>
+                                <next>
+                                    <block type="player_message">
+                                        <field name="MSG">&aOtrzymano Pakiet VIP!</field>
+                                        <next>
+                                            <block type="player_give">
+                                                <field name="ITEM">diamond</field>
+                                                <field name="COUNT">5</field>
+                                                <next>
+                                                    <block type="cmd_execute_as">
+                                                        <field name="TARGET">console</field>
+                                                        <field name="CMD">effect give %player% speed 120 1</field>
+                                                    </block>
+                                                </next>
+                                            </block>
+                                        </next>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </xml>`;
+                workspace.clear();
+                const xml = Blockly.utils.xml.textToDom(xmlText);
+                Blockly.Xml.domToWorkspace(xml, workspace);
+                showToast("Załadowano szablon komendy /vip!");
+            } else if (key === 'cmd_heal') {
+                switchMainTab('blocks');
+                const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+                    <block type="cmd_declare_full" x="40" y="40">
+                        <field name="NAME">ulecz</field>
+                        <field name="PERM">serwer.ulecz</field>
+                        <statement name="DO">
+                            <block type="player_heal">
+                                <next>
+                                    <block type="player_feed">
+                                        <next>
+                                            <block type="player_message">
+                                                <field name="MSG">&eZostałeś w pełni uleczony i nakarmiony!</field>
+                                            </block>
+                                        </next>
+                                    </block>
+                                </next>
+                            </block>
+                        </statement>
+                    </block>
+                </xml>`;
+                workspace.clear();
+                const xml = Blockly.utils.xml.textToDom(xmlText);
+                Blockly.Xml.domToWorkspace(xml, workspace);
+                showToast("Załadowano szablon komendy /ulecz!");
+            } else if (key === 'shopgui') {
+                switchMainTab('gui');
+                guiSlotsData = Array(54).fill(null);
+                guiSlotsData[11] = { item: 'diamond', icon: '💎', name: '&aRanga VIP', command: 'exec /rangavip %player%' };
+                guiSlotsData[13] = { item: 'golden_apple', icon: '🍏', name: '&eSuper Zestaw Food', command: 'exec /kit food %player%' };
+                guiSlotsData[15] = { item: 'nether_star', icon: '⭐', name: '&cMagiczny Klucz', command: 'exec /key give %player%' };
+                renderChestSlots();
+                updateSlotInspector();
+                showToast("Załadowano szablon Sklepu GUI!");
             } else {
-                slot.style.background = '#2d2d2d';
-                slot.style.color = '#888';
-                slot.title = '';
+                switchMainTab('blocks');
+                showToast("Załadowano szablon klocków!");
             }
         }
 
-        function saveGuiConfig() {
-            let title = document.getElementById('guiTitleInput').value;
-            let rows = document.getElementById('guiRowsSelect').value;
-            alert(`Zapisano konfigurację GUI "${title}" (${rows} rzędów)! Możesz teraz wstawić klocek otwierania GUI.`);
-            closeGuiModal();
-        }
+        // ----------------------------------------------------
+        // INITIALIZATION ON LOAD
+        // ----------------------------------------------------
+        window.onload = function() {
+            initBlocks();
+            renderChestSlots();
+            updateSlotInspector();
+
+            workspace = Blockly.inject('blocklyDiv', {
+                toolbox: document.getElementById('toolbox'),
+                grid: {
+                    spacing: 25,
+                    length: 4,
+                    colour: '#262936',
+                    snap: true
+                },
+                zoom: {
+                    controls: true,
+                    wheel: true,
+                    startScale: 0.9
+                },
+                trashcan: true
+            });
+
+            workspace.addChangeListener(updateGeneratedCode);
+            updateGeneratedCode();
+        };
     </script>
 </body>
 </html>
