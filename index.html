@@ -1703,9 +1703,9 @@
             } else if (key === 'shopgui') {
                 switchMainTab('gui');
                 guiSlotsData = Array(54).fill(null);
-                guiSlotsData[11] = { item: 'diamond', icon: '💎', name: '&aRanga VIP', command: 'exec /rangavip %player%' };
-                guiSlotsData[13] = { item: 'golden_apple', icon: '🍏', name: '&eSuper Zestaw Food', command: 'exec /kit food %player%' };
-                guiSlotsData[15] = { item: 'nether_star', icon: '⭐', name: '&cMagiczny Klucz', command: 'exec /key give %player%' };
+                guiSlotsData[11] = { item: 'diamond', icon: '💎', name: '&aRanga VIP', lore: '&7Koszt: 100 Monet', command: 'exec /rangavip %player%' };
+                guiSlotsData[13] = { item: 'golden_apple', icon: '🍏', name: '&eSuper Zestaw Food', lore: '&7Pełne leczenie', command: 'exec /kit food %player%' };
+                guiSlotsData[15] = { item: 'nether_star', icon: '⭐', name: '&cMagiczny Klucz', lore: '&7Do skrzyni', command: 'exec /key give %player%' };
                 renderChestSlots();
                 updateSlotInspector();
                 showToast("Załadowano szablon Sklepu GUI!");
@@ -1713,6 +1713,283 @@
                 switchMainTab('blocks');
                 showToast("Załadowano szablon klocków!");
             }
+        }
+
+        // ----------------------------------------------------
+        // CHEST GUI DESIGNER & UI HELPER FUNCTIONS
+        // ----------------------------------------------------
+        function switchMainTab(tab) {
+            const blocksView = document.getElementById('viewBlocks');
+            const guiView = document.getElementById('viewGui');
+            const blocksBtn = document.getElementById('tabBlocksBtn');
+            const guiBtn = document.getElementById('tabGuiBtn');
+
+            if (tab === 'blocks') {
+                blocksView.classList.remove('hidden');
+                guiView.classList.add('hidden');
+                blocksBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white shadow-md transition flex items-center gap-2";
+                guiBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-2";
+                if (workspace) Blockly.svgResize(workspace);
+            } else {
+                blocksView.classList.add('hidden');
+                guiView.classList.remove('hidden');
+                guiBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white shadow-md transition flex items-center gap-2";
+                blocksBtn.className = "px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-2";
+            }
+        }
+
+        function changeGuiRows(rows) {
+            currentGuiRows = parseInt(rows, 10);
+            if (selectedSlotIndex >= currentGuiRows * 9) {
+                selectedSlotIndex = 0;
+            }
+            renderChestSlots();
+            updateSlotInspector();
+        }
+
+        function updateGuiHeaderTitle() {
+            const title = document.getElementById('guiTitleInput').value || 'Sklep Serwerowy';
+            document.getElementById('chestTitleDisplay').innerText = title.replace(/&[0-9a-fk-or]/gi, '');
+            updateGeneratedCode();
+        }
+
+        function renderChestSlots() {
+            const container = document.getElementById('chestSlotsGrid');
+            container.innerHTML = '';
+            const totalSlots = currentGuiRows * 9;
+
+            for (let i = 0; i < totalSlots; i++) {
+                const slot = document.createElement('div');
+                slot.className = `mc-slot ${i === selectedSlotIndex ? 'selected' : ''}`;
+                slot.onclick = () => selectSlot(i);
+
+                const data = guiSlotsData[i];
+                if (data && data.item) {
+                    const itemEl = document.createElement('span');
+                    itemEl.className = 'mc-slot-item';
+                    itemEl.innerText = data.icon || '📦';
+                    itemEl.title = `${data.name || data.item} (Slot #${i})`;
+                    slot.appendChild(itemEl);
+                }
+
+                container.appendChild(slot);
+            }
+        }
+
+        function selectSlot(index) {
+            selectedSlotIndex = index;
+            renderChestSlots();
+            updateSlotInspector();
+        }
+
+        function updateSlotInspector() {
+            document.getElementById('selectedSlotNum').innerText = selectedSlotIndex;
+            const data = guiSlotsData[selectedSlotIndex];
+            const badge = document.getElementById('selectedSlotBadge');
+
+            if (data && data.item) {
+                badge.innerText = 'Aktywny';
+                badge.className = 'text-[10px] bg-emerald-900/60 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/40';
+                document.getElementById('slotItemIdInput').value = data.item || '';
+                document.getElementById('slotNameInput').value = data.name || '';
+                document.getElementById('slotLoreInput').value = data.lore || '';
+                document.getElementById('slotCommandInput').value = data.command || '';
+            } else {
+                badge.innerText = 'Pusty';
+                badge.className = 'text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700';
+                document.getElementById('slotItemIdInput').value = 'diamond';
+                document.getElementById('slotNameInput').value = '&aNazwa przedmiotu';
+                document.getElementById('slotLoreInput').value = '';
+                document.getElementById('slotCommandInput').value = '';
+            }
+        }
+
+        function setItemForSelectedSlot(itemId, icon) {
+            if (!guiSlotsData[selectedSlotIndex]) {
+                guiSlotsData[selectedSlotIndex] = {
+                    item: itemId,
+                    icon: icon,
+                    name: document.getElementById('slotNameInput').value || '&aPrzedmiot',
+                    lore: document.getElementById('slotLoreInput').value || '',
+                    command: document.getElementById('slotCommandInput').value || ''
+                };
+            } else {
+                guiSlotsData[selectedSlotIndex].item = itemId;
+                guiSlotsData[selectedSlotIndex].icon = icon;
+            }
+            renderChestSlots();
+            updateSlotInspector();
+            updateGeneratedCode();
+        }
+
+        function saveCurrentSlotData() {
+            const itemId = document.getElementById('slotItemIdInput').value.trim();
+            if (!itemId) {
+                guiSlotsData[selectedSlotIndex] = null;
+            } else {
+                const existingIcon = guiSlotsData[selectedSlotIndex] ? guiSlotsData[selectedSlotIndex].icon : '📦';
+                guiSlotsData[selectedSlotIndex] = {
+                    item: itemId,
+                    icon: existingIcon,
+                    name: document.getElementById('slotNameInput').value,
+                    lore: document.getElementById('slotLoreInput').value,
+                    command: document.getElementById('slotCommandInput').value
+                };
+            }
+            renderChestSlots();
+            updateGeneratedCode();
+        }
+
+        function clearCurrentSlotData() {
+            guiSlotsData[selectedSlotIndex] = null;
+            renderChestSlots();
+            updateSlotInspector();
+            updateGeneratedCode();
+        }
+
+        function fillEmptySlotsWithGlass() {
+            const total = currentGuiRows * 9;
+            for (let i = 0; i < total; i++) {
+                if (!guiSlotsData[i]) {
+                    guiSlotsData[i] = {
+                        item: 'black_stained_glass_pane',
+                        icon: '⬛',
+                        name: ' ',
+                        lore: '',
+                        command: ''
+                    };
+                }
+            }
+            renderChestSlots();
+            updateSlotInspector();
+            updateGeneratedCode();
+            showToast("Wypełniono puste sloty czarną szybą!");
+        }
+
+        function injectGuiToBlockly() {
+            switchMainTab('blocks');
+            const title = document.getElementById('guiTitleInput').value || '&8Sklep';
+
+            let innerBlocks = '';
+            const total = currentGuiRows * 9;
+            let currentBlockXml = '';
+
+            for (let i = total - 1; i >= 0; i--) {
+                const slot = guiSlotsData[i];
+                if (slot && slot.item) {
+                    const blockXml = `
+                        <block type="gui_format_slot">
+                            <field name="SLOT">${i}</field>
+                            <field name="ITEM">${slot.item}</field>
+                            <field name="NAME">${slot.name || ''}</field>
+                            ${currentBlockXml ? `<next>${currentBlockXml}</next>` : ''}
+                        </block>`;
+                    currentBlockXml = blockXml;
+                }
+            }
+
+            const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
+                <block type="gui_open_chest" x="50" y="50">
+                    <field name="TITLE">${title}</field>
+                    <field name="ROWS">${currentGuiRows}</field>
+                    ${currentBlockXml ? `<statement name="DO">${currentBlockXml}</statement>` : ''}
+                </block>
+            </xml>`;
+
+            workspace.clear();
+            const xml = Blockly.utils.xml.textToDom(xmlText);
+            Blockly.Xml.domToWorkspace(xml, workspace);
+            showToast("Przekształcono GUI na klocki!");
+        }
+
+        function generateSkriptChildren(block, indentLevel) {
+            let code = "";
+            let currentBlock = block.getInputTargetBlock("DO");
+            while (currentBlock) {
+                code += generateSkriptFromBlock(currentBlock, indentLevel);
+                currentBlock = currentBlock.getNextBlock();
+            }
+            return code;
+        }
+
+        function updateGeneratedCode() {
+            if (!workspace) return;
+            const topBlocks = workspace.getTopBlocks(true);
+            document.getElementById('blockCount').innerHTML = `<i class="fa-solid fa-cubes mr-1 text-slate-500"></i> Bloki: ${workspace.getAllBlocks(false).length}`;
+
+            let fullCode = "";
+            if (currentLang === 'skript') {
+                fullCode = "# ==========================================\n" +
+                           "#  Wygenerowano przez ModBlocker Studio v4.0\n" +
+                           "# ==========================================\n\n";
+
+                if (topBlocks.length === 0) {
+                    fullCode += "# Przeciągnij bloki ze skrzynki po lewej stronie, aby wygenerować kod Skripta!";
+                } else {
+                    topBlocks.forEach(b => {
+                        fullCode += generateSkriptFromBlock(b, 0) + "\n";
+                    });
+                }
+            } else {
+                fullCode = "// ModBlocker JS Export\n";
+                topBlocks.forEach(b => {
+                    fullCode += `// Block: ${b.type}\n`;
+                });
+            }
+
+            document.getElementById('codeOutput').innerText = fullCode;
+        }
+
+        function switchLang(lang) {
+            currentLang = lang;
+            const skBtn = document.getElementById('langSkriptBtn');
+            const jsBtn = document.getElementById('langJsBtn');
+            if (lang === 'skript') {
+                skBtn.className = "px-3 py-1 rounded-md text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                jsBtn.className = "px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-white hover:bg-mcBorder transition";
+            } else {
+                jsBtn.className = "px-3 py-1 rounded-md text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/40";
+                skBtn.className = "px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-white hover:bg-mcBorder transition";
+            }
+            updateGeneratedCode();
+        }
+
+        function copyGeneratedCode() {
+            const code = document.getElementById('codeOutput').innerText;
+            const tempArea = document.createElement('textarea');
+            tempArea.value = code;
+            document.body.appendChild(tempArea);
+            tempArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempArea);
+            showToast("Skopiowano kod do schowka!");
+        }
+
+        function exportCode(ext) {
+            const code = document.getElementById('codeOutput').innerText;
+            const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `modblocker_script.${ext}`;
+            link.click();
+            showToast(`Pobrano plik modblocker_script.${ext}`);
+        }
+
+        function clearWorkspace() {
+            if (workspace) {
+                workspace.clear();
+                updateGeneratedCode();
+                showToast("Wyczyszczono obszar roboczy.");
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
         }
 
         // ----------------------------------------------------
