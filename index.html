@@ -52,49 +52,63 @@
         .blocklyToolboxDiv {
             background-color: #171922 !important;
             border-right: 1px solid #2d3142 !important;
-            color: #e2e8f0 !important;
-            width: 240px !important;
+            width: 260px !important;
+            color: #ffffff !important;
         }
-        .blocklyTreeLabel {
+        
+        /* WYRAŹNE CZARNE NAPISY W KATEGORIACH I PRZYCISKACH TOOLBOXA */
+        .blocklyTreeLabel, 
+        .blocklyToolboxCategory .blocklyTreeLabel,
+        .blocklyTreeRow span {
             font-family: 'Inter', sans-serif !important;
-            font-size: 13px !important;
-            font-weight: 500 !important;
-            color: #cbd5e1 !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            color: #000000 !important; /* Wymuszenie czarnego koloru napisów */
+            text-shadow: 0px 0px 2px #ffffff !important; /* Lekka biała poświata dla 100% czytelności */
         }
+
         .blocklyTreeRow {
             padding: 8px 12px !important;
-            margin: 2px 4px !important;
-            border-radius: 6px !important;
+            margin: 3px 6px !important;
+            border-radius: 8px !important;
             height: auto !important;
+            background-color: #e2e8f0 !important; /* Jasne tło dla paska kategorii */
             transition: all 0.15s ease !important;
         }
         .blocklyTreeRow:hover {
-            background-color: #242836 !important;
+            background-color: #ffffff !important;
         }
         .blocklyTreeSelected {
             background-color: #3b82f6 !important;
         }
         .blocklyTreeSelected .blocklyTreeLabel {
             color: #ffffff !important;
-            font-weight: 600 !important;
+            text-shadow: none !important;
+            font-weight: 800 !important;
         }
+        
+        /* USUNIĘCIE DZIWNYCH PASKAW I POPRAWA PANELE WYSUNIĘTEGO (FLYOUT) */
         .blocklyFlyoutBackground {
-            fill: #1d202c !important;
-            fill-opacity: 0.95 !important;
+            fill: #181a24 !important;
+            fill-opacity: 1 !important;
+        }
+        .blocklyFlyout {
+            border-left: 2px solid #3b82f6 !important;
         }
         .blocklyScrollbarHandle {
-            fill: #3b4154 !important;
+            fill: #3b82f6 !important;
+            opacity: 0.6;
         }
 
         /* Fix text contrast in Blockly fields, dropdowns & context menus */
         .blocklyText, .blocklyHtmlInput, .blocklyDropdownText {
-            fill: #0f172a !important;
-            color: #0f172a !important;
+            fill: #000000 !important;
+            color: #000000 !important;
             font-family: 'Inter', sans-serif !important;
-            font-weight: 600 !important;
+            font-weight: 700 !important;
         }
         .blocklyNonEditableText text {
-            fill: #0f172a !important;
+            fill: #000000 !important;
         }
         .blocklyWidgetDiv .blocklyHtmlInput {
             background-color: #ffffff !important;
@@ -104,15 +118,16 @@
             padding: 2px 4px !important;
         }
         .blocklyContextMenu {
-            background-color: #1e222e !important;
-            border: 1px solid #2d3142 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
             border-radius: 8px !important;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
         }
         .blocklyMenuItem {
-            color: #e2e8f0 !important;
+            color: #0f172a !important;
             font-family: 'Inter', sans-serif !important;
             font-size: 13px !important;
+            font-weight: 600 !important;
             padding: 6px 12px !important;
         }
         .blocklyMenuItemHighlight {
