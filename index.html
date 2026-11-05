@@ -31,8 +31,9 @@
     <!-- Google Fonts: Inter & Fira Code -->
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Google Blockly Library CDN -->
+    <!-- Google Blockly Library CDNs (Core + JS Generator for GitHub Pages compatibility) -->
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
 
     <style>
         body {
@@ -83,6 +84,40 @@
         }
         .blocklyScrollbarHandle {
             fill: #3b4154 !important;
+        }
+
+        /* Fix text contrast in Blockly fields, dropdowns & context menus */
+        .blocklyText, .blocklyHtmlInput, .blocklyDropdownText {
+            fill: #0f172a !important;
+            color: #0f172a !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 600 !important;
+        }
+        .blocklyNonEditableText text {
+            fill: #0f172a !important;
+        }
+        .blocklyWidgetDiv .blocklyHtmlInput {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 4px !important;
+            padding: 2px 4px !important;
+        }
+        .blocklyContextMenu {
+            background-color: #1e222e !important;
+            border: 1px solid #2d3142 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+        }
+        .blocklyMenuItem {
+            color: #e2e8f0 !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 13px !important;
+            padding: 6px 12px !important;
+        }
+        .blocklyMenuItemHighlight {
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
         }
 
         /* Minecraft Chest Slot Styles */
@@ -1493,27 +1528,27 @@
             switch (block.type) {
                 // Command Execution Category
                 case 'cmd_declare_full':
-                    code += `command /${block.getFieldValue('NAME')}:\n` +
-                            `${indent}\tpermission: ${block.getFieldValue('PERM')}\n` +
-                            `${indent}\tpermission message: "&cBrak permisji (${block.getFieldValue('PERM')})!"\n` +
+                    code += `command /${block.getFieldValue('NAME') || 'cmd'}:\n` +
+                            `${indent}\tpermission: ${block.getFieldValue('PERM') || 'op'}\n` +
+                            `${indent}\tpermission message: "&cBrak permisji!"\n` +
                             `${indent}\ttrigger:\n` + generateSkriptChildren(block, indentLevel + 2);
                     break;
                 case 'cmd_execute_as':
                     const target = block.getFieldValue('TARGET');
                     if (target === 'console') {
-                        code += `${indent}execute console command "${block.getFieldValue('CMD')}"\n`;
+                        code += `${indent}execute console command "${block.getFieldValue('CMD') || ''}"\n`;
                     } else if (target === 'op') {
-                        code += `${indent}make player execute command "${block.getFieldValue('CMD')}" with op permissions\n`;
+                        code += `${indent}make player execute command "${block.getFieldValue('CMD') || ''}" with op permissions\n`;
                     } else {
-                        code += `${indent}make player execute command "${block.getFieldValue('CMD')}"\n`;
+                        code += `${indent}make player execute command "${block.getFieldValue('CMD') || ''}"\n`;
                     }
                     break;
                 case 'cmd_dispatch_all':
-                    code += `${indent}loop all players:\n${indent}\tmake loop-player execute command "${block.getFieldValue('CMD')}"\n`;
+                    code += `${indent}loop all players:\n${indent}\tmake loop-player execute command "${block.getFieldValue('CMD') || ''}"\n`;
                     break;
                 case 'cmd_cooldown':
                     code += `${indent}set {_cd} to difference between {cooldown::%player%} and now\n` +
-                            `${indent}if {_cd} is less than ${block.getFieldValue('SEC')} seconds:\n` +
+                            `${indent}if {_cd} is less than ${block.getFieldValue('SEC') || 5} seconds:\n` +
                             `${indent}\tsend "&cOdczekaj chwilę przed ponownym użyciem!" to player\n` +
                             `${indent}\tstop\n` +
                             `${indent}set {cooldown::%player%} to now\n`;
@@ -1639,79 +1674,87 @@
             return code;
         }
 
-        // Updated Preset Loader to include new Command Presets
-        function loadPreset(key) {
-            if (key === 'cmd_vip') {
-                switchMainTab('blocks');
-                const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
-                    <block type="cmd_declare_full" x="40" y="40">
-                        <field name="NAME">vip</field>
-                        <field name="PERM">gracz.vip</field>
-                        <statement name="DO">
-                            <block type="cmd_cooldown">
-                                <field name="SEC">60</field>
-                                <next>
-                                    <block type="player_message">
-                                        <field name="MSG">&aOtrzymano Pakiet VIP!</field>
-                                        <next>
-                                            <block type="player_give">
-                                                <field name="ITEM">diamond</field>
-                                                <field name="COUNT">5</field>
-                                                <next>
-                                                    <block type="cmd_execute_as">
-                                                        <field name="TARGET">console</field>
-                                                        <field name="CMD">effect give %player% speed 120 1</field>
-                                                    </block>
-                                                </next>
-                                            </block>
-                                        </next>
-                                    </block>
-                                </next>
-                            </block>
-                        </statement>
-                    </block>
-                </xml>`;
-                workspace.clear();
-                const xml = Blockly.utils.xml.textToDom(xmlText);
-                Blockly.Xml.domToWorkspace(xml, workspace);
-                showToast("Załadowano szablon komendy /vip!");
-            } else if (key === 'cmd_heal') {
-                switchMainTab('blocks');
-                const xmlText = `<xml xmlns="https://developers.google.com/blockly/xml">
-                    <block type="cmd_declare_full" x="40" y="40">
-                        <field name="NAME">ulecz</field>
-                        <field name="PERM">serwer.ulecz</field>
-                        <statement name="DO">
-                            <block type="player_heal">
-                                <next>
-                                    <block type="player_feed">
-                                        <next>
-                                            <block type="player_message">
-                                                <field name="MSG">&eZostałeś w pełni uleczony i nakarmiony!</field>
-                                            </block>
-                                        </next>
-                                    </block>
-                                </next>
-                            </block>
-                        </statement>
-                    </block>
-                </xml>`;
-                workspace.clear();
-                const xml = Blockly.utils.xml.textToDom(xmlText);
-                Blockly.Xml.domToWorkspace(xml, workspace);
-                showToast("Załadowano szablon komendy /ulecz!");
-            } else if (key === 'shopgui') {
-                switchMainTab('gui');
-                guiSlotsData = Array(54).fill(null);
-                guiSlotsData[11] = { item: 'diamond', icon: '💎', name: '&aRanga VIP', lore: '&7Koszt: 100 Monet', command: 'exec /rangavip %player%' };
-                guiSlotsData[13] = { item: 'golden_apple', icon: '🍏', name: '&eSuper Zestaw Food', lore: '&7Pełne leczenie', command: 'exec /kit food %player%' };
-                guiSlotsData[15] = { item: 'nether_star', icon: '⭐', name: '&cMagiczny Klucz', lore: '&7Do skrzyni', command: 'exec /key give %player%' };
-                renderChestSlots();
-                updateSlotInspector();
-                showToast("Załadowano szablon Sklepu GUI!");
+        function generateJsFromBlock(block, indentLevel = 0) {
+            if (!block) return "";
+            const indent = "  ".repeat(indentLevel);
+            let code = "";
+
+            switch (block.type) {
+                case 'cmd_declare_full':
+                    code += `${indent}registerCommand("${block.getFieldValue('NAME')}", "${block.getFieldValue('PERM')}", (player, args) => {\n` +
+                            generateJsChildren(block, indentLevel + 1) + `${indent}});\n`;
+                    break;
+                case 'cmd_execute_as':
+                    code += `${indent}executeCommand("${block.getFieldValue('TARGET')}", "${block.getFieldValue('CMD')}");\n`;
+                    break;
+                case 'player_message':
+                    code += `${indent}player.sendMessage("${block.getFieldValue('MSG')}");\n`;
+                    break;
+                case 'player_give':
+                    code += `${indent}player.giveItem("${block.getFieldValue('ITEM')}", ${block.getFieldValue('COUNT')});\n`;
+                    break;
+                case 'event_join':
+                    code += `${indent}onPlayerJoin((player) => {\n` + generateJsChildren(block, indentLevel + 1) + `${indent}});\n`;
+                    break;
+                default:
+                    code += `${indent}// Block: ${block.type}\n`;
+                    break;
+            }
+
+            if (block.nextConnection && block.nextConnection.targetBlock()) {
+                code += generateJsFromBlock(block.nextConnection.targetBlock(), indentLevel);
+            }
+
+            return code;
+        }
+
+        function generateJsChildren(block, indentLevel) {
+            let code = "";
+            let currentBlock = block.getInputTargetBlock("DO");
+            while (currentBlock) {
+                code += generateJsFromBlock(currentBlock, indentLevel);
+                currentBlock = currentBlock.getNextBlock();
+            }
+            return code;
+        }
+
+        function updateGeneratedCode() {
+            if (!workspace) return;
+            const topBlocks = workspace.getTopBlocks(true);
+            const blockCountEl = document.getElementById('blockCount');
+            if (blockCountEl) {
+                blockCountEl.innerHTML = `<i class="fa-solid fa-cubes mr-1 text-slate-500"></i> Bloki: ${workspace.getAllBlocks(false).length}`;
+            }
+
+            let fullCode = "";
+            if (currentLang === 'skript') {
+                fullCode = "# ==========================================\n" +
+                           "#  Wygenerowano przez ModBlocker Studio v5.0\n" +
+                           "# ==========================================\n\n";
+
+                if (topBlocks.length === 0) {
+                    fullCode += "# Przeciągnij bloki ze skrzynki po lewej stronie, aby wygenerować kod Skripta!";
+                } else {
+                    topBlocks.forEach(b => {
+                        fullCode += generateSkriptFromBlock(b, 0) + "\n";
+                    });
+                }
             } else {
-                switchMainTab('blocks');
-                showToast("Załadowano szablon klocków!");
+                fullCode = "// ==========================================\n" +
+                           "//  ModBlocker JS Export v5.0\n" +
+                           "// ==========================================\n\n";
+                if (topBlocks.length === 0) {
+                    fullCode += "// Ułóż klocki w edytorze...";
+                } else {
+                    topBlocks.forEach(b => {
+                        fullCode += generateJsFromBlock(b, 0) + "\n";
+                    });
+                }
+            }
+
+            const codeOutputEl = document.getElementById('codeOutput');
+            if (codeOutputEl) {
+                codeOutputEl.innerText = fullCode;
             }
         }
 
